@@ -1,0 +1,33 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  color: #333;
+  background-color: #f8f9fa;
+  background: rgb(165, 193, 248);
+}
+
+h2 {
+  text-align: center;
+  color: #002e6d;
+}
+
+.table th {
+  background-color: #002e6d !important;
+  color: white;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  vertical-align: middle !important;
+}
+
+/* Opcional si quieres mejor control del aspecto */
+.object-fit-contain {
+  object-fit: contain;
+}
+
+.titulo-deformaciones {
+  text-align: center;
+  color: #003366;         /* Azul marino más oscuro */
+  font-size: 1.3rem;       /* Más pequeño que el h2 original */
+  font-weight: bold;
+  font-family: 'Segoe UI', sans-serif;
+}
+
