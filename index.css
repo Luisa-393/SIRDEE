@@ -8,6 +8,8 @@ body {
 h2 {
   text-align: center;
   color: #002e6d;
+  font-size: 1.3rem; 
+  font-weight: bold;
 }
 
 .table th {

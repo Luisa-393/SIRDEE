@@ -1,0 +1,65 @@
+/* DISEÑO PARA LOS FORMATOS  */
+
+.table th {
+  background-color: #002e6d !important;
+  color: white;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  vertical-align: middle !important;
+}
+
+/* Asegura que los TD de la tabla de datos generales sean blancos */
+.tabla-datos-generales td,
+.tabla-datos-generales input {
+  background-color: white !important;
+  color: #000;
+}
+
+/* Opcional: aplica también a los th si no los quieres azules */
+.tabla-datos-generales th {
+  background-color: #f2f2f2 !important;
+  color: #000;
+}
+
+/* Estilo general de la card */
+.custom-card {
+  padding: 1.5rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+/* Título rojo como en la imagen */
+h2 {
+  background-color: #8B0000;
+  color: white;
+  text-align: center;
+  padding: 2px;
+  margin-bottom: 7px;
+  font-weight: bold;
+  font-size: 1.2rem; 
+}
+
+/* Reduce el tamaño de letra y padding para toda la tabla de datos generales */
+.tabla-datos-generales th {
+  font-size: 0.72rem !important;
+  padding: 2px 4px !important;
+  font-weight: 600;
+  line-height: 1.1; /* Compactar texto como en la imagen */
+}
+
+/* Reduce el tamaño de los inputs en la tabla */
+.tabla-datos-generales input[type="text"],
+.tabla-datos-generales input[type="date"] {
+  font-size: 0.75rem;
+  padding: 2px 4px;
+  height: auto;
+}
+
+.table td {
+  word-break: break-word;
+}
+
+.texto-pequeño {
+  font-size: 0.75rem;
+  padding: 2px 4px;
+}
+

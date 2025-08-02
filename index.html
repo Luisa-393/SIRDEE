@@ -34,8 +34,8 @@
                     <thead class="table-primary align-middle">
                         <tr>
                             <th>Lectura de<br>Tiempo (seg)</th>
-                            <th>Deformación<br>LVDT3 (mm)</th>
-                            <th>Deformación<br>LVDT4 (mm)</th>
+                            <th>Deformación<br>LVDT1 (mm)</th>
+                            <th>Deformación<br>LVDT2 (mm)</th>
                             <th>Deformación<br>Promedio (mm)</th>
                         </tr>
                     </thead>
@@ -45,70 +45,77 @@
                 </table>
             </div>
             <!-- Botón para abrir el modal -->
-            <div class="mb-3 text-end">
+            <div class="mb-3 d-flex justify-content-end gap-2">
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTiempo">
                     Elegir lectura de tiempo
-                </button><br>
-
+                </button>
                 <!-- Botón para graficar -->
-                <br><div class="mb-3 text-end">
-                    <button class="btn btn-outline-primary" id="btnGraficar">
-                        Graficar Deformaciones
+                <button class="btn btn-outline-primary" id="btnGraficar">
+                    Graficar Deformaciones
+                </button>
+
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle" type="button" id="btnFormatos"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Formato de ensayes
                     </button>
+                    <ul class="dropdown-menu" aria-labelledby="btnFormatos">
+                        <li><a class="dropdown-item" href="#" id="formatoCilindros">Cilindros</a></li>
+                        <li><a class="dropdown-item" href="#" id="formatoMuretes">Muretes</a></li>
+                        <li><a class="dropdown-item" href="#" id="formatoPilas">Pilas</a></li>
+                    </ul>
                 </div>
+            </div>
+                                      
+            <!-- Contenedor del gráfico -->
+            <canvas id="graficaDeformaciones" width="600" height="300"></canvas>
 
-                <!-- Contenedor del gráfico -->
-                <canvas id="graficaDeformaciones" width="600" height="300"></canvas>
 
-
-                <!-- Modal de selección de tiempo -->
-                <div class="modal fade" id="modalTiempo" tabindex="-1" aria-labelledby="modalTiempoLabel"
-                    aria-hidden="true">
-                    <div class="modal-dialog">
-                        <form id="formTiempo" class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="modalTiempoLabel">Configurar lectura de tiempo</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Cerrar"></button>
+            <!-- Modal de selección de tiempo -->
+            <div class="modal fade" id="modalTiempo" tabindex="-1" aria-labelledby="modalTiempoLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <form id="formTiempo" class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalTiempoLabel">Configurar lectura de tiempo</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="inicio" class="form-label">Inicio (seg)</label>
+                                <input type="number" class="form-control" id="inicio" min="0" required>
                             </div>
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <label for="inicio" class="form-label">Inicio (seg)</label>
-                                    <input type="number" class="form-control" id="inicio" min="0" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="fin" class="form-label">Fin (seg)</label>
-                                    <input type="number" class="form-control" id="fin" min="0" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="salto" class="form-label">Intervalo (seg)</label>
-                                    <select class="form-select" id="salto" required>
-                                        <option value="5">5 segundos</option>
-                                        <option value="10" selected>10 segundos</option>
-                                        <option value="15">15 segundos</option>
-                                        <option value="20">20 segundos</option>
-                                    </select>
-                                </div>
+                            <div class="mb-3">
+                                <label for="fin" class="form-label">Fin (seg)</label>
+                                <input type="number" class="form-control" id="fin" min="0" required>
                             </div>
-                            <div class="modal-footer">
-                                <button type="submit" class="btn btn-success">Aceptar</button>
-                                <button type="button" class="btn btn-secondary"
-                                    data-bs-dismiss="modal">Cancelar</button>
+                            <div class="mb-3">
+                                <label for="salto" class="form-label">Intervalo (seg)</label>
+                                <select class="form-select" id="salto" required>
+                                    <option value="5">5 segundos</option>
+                                    <option value="10" selected>10 segundos</option>
+                                    <option value="15">15 segundos</option>
+                                    <option value="20">20 segundos</option>
+                                </select>
                             </div>
-                        </form>
-                    </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-success">Aceptar</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        </div>
+                    </form>
                 </div>
-
             </div>
 
         </div>
+
+    </div>
     </div>
 
-    <script src="main.js"></script>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    <script src="main.js"></script>
 </body>
-
 </html>
