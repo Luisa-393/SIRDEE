@@ -181,4 +181,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('formatoPilas').addEventListener('click', function () {
         window.location.href = "pilas.html";
     });
+    
+
+
 });

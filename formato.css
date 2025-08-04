@@ -35,7 +35,7 @@ h2 {
   padding: 2px;
   margin-bottom: 7px;
   font-weight: bold;
-  font-size: 1.2rem; 
+  font-size: 1rem; 
 }
 
 /* Reduce el tamaño de letra y padding para toda la tabla de datos generales */
@@ -63,3 +63,34 @@ h2 {
   padding: 2px 4px;
 }
 
+
+.grafica-contenedor {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+#linea-esfuerzo,
+#graficaDeformaciones {
+  flex: 1 1 70%;
+  max-width: 75%;
+}
+
+#promedios {
+  flex: 0 0 10%;
+  max-width: 35%;
+  background-color: #f9f9f9;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+#promedios h5 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
