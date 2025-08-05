@@ -75,11 +75,12 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 celdaPromedio.innerText = '';
             }
+            actualizarGrafica();
         }
     });
 
     // ======= GRAFICAR ========
-    document.getElementById('btnGraficar').addEventListener('click', function () {
+    function actualizarGrafica() {
         const tiempos = [];
         const deformaciones1 = [];
         const deformaciones2 = [];
@@ -152,7 +153,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         });
-    });
+    }
+
+    //Actualizar Graficar
+    document.getElementById('btnGraficar').addEventListener('click', actualizarGrafica);
 
 
     // ======= REDIRECCIONAMIENTO A FORMATOS ========
@@ -181,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('formatoPilas').addEventListener('click', function () {
         window.location.href = "pilas.html";
     });
-    
+
 
 
 });

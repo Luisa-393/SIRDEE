@@ -34,11 +34,12 @@ document.addEventListener('input', function (e) {
         } else {
             celdaEsfuerzo.innerText = '';
         }
+        actualizarGrafica();
     }
 });
 
 
-document.getElementById('btnGraficar').addEventListener('click', function () {
+function actualizarGrafica() {
     const filas = document.querySelectorAll('#tablaDatos tbody tr');
 
     const deformaciones = [];
@@ -56,12 +57,10 @@ document.getElementById('btnGraficar').addEventListener('click', function () {
 
     const ctx = document.getElementById('graficaDeformaciones').getContext('2d');
 
-    // Destruir gráfica anterior si existe
     if (window.miGrafica) {
         window.miGrafica.destroy();
     }
 
-    // Crear nueva gráfica
     window.miGrafica = new Chart(ctx, {
         type: 'line',
         data: {
@@ -80,7 +79,7 @@ document.getElementById('btnGraficar').addEventListener('click', function () {
                 },
                 {
                     label: 'Sensor LVDT 02',
-                    data: esfuerzos.map(e => e - 10), // ajustar
+                    data: esfuerzos.map(e => e - 10), // ajustado
                     borderColor: '#FFD580',
                     backgroundColor: 'rgba(255,213,128,0.3)',
                     tension: 0.4,
@@ -97,41 +96,30 @@ document.getElementById('btnGraficar').addEventListener('click', function () {
                 mode: 'nearest', intersect: false
             },
             plugins: {
-                tooltip: {
-                    enabled: true
-                },
-                legend: {
-                    display: true, position: 'top'
-                },
-                title: {
-                    display: true, text: 'Esfuerzo-deformación sensores LVDT'
-                }
+                tooltip: { enabled: true },
+                legend: { display: true, position: 'top' },
+                title: { display: true, text: 'Esfuerzo-deformación sensores LVDT' }
             },
             scales: {
-                x: {
-                    title: {
-                        display: true, text: 'Deformación (ε)'
-                    }
-                },
-                y: {
-                    title: {
-                        display: true, text: 'Esfuerzo (σ)'
-                    }
-                }
+                x: { title: { display: true, text: 'Deformación (ε)' } },
+                y: { title: { display: true, text: 'Esfuerzo (σ)' } }
             }
         }
-
     });
 
-    // Al final de la función del botón "Graficar"
+    // Mostrar promedios
     if (esfuerzos.length > 0 && deformaciones.length > 0) {
         const promEsfuerzo = (esfuerzos.reduce((a, b) => a + b, 0) / esfuerzos.length).toFixed(2);
         const promDeformacion = (deformaciones.reduce((a, b) => a + b, 0) / deformaciones.length).toFixed(4);
 
         document.getElementById('promedios').innerHTML = `
-        <h5 class="fw-bold">Promedio de datos</h5>
-        <p><strong>Promd σ</strong> ${promEsfuerzo}</p>
-        <p><strong>Promd ε</strong> ${promDeformacion}</p>
-    `;
+            <h5 class="fw-bold">Promedio de datos</h5>
+            <p><strong>Promd σ:</strong> ${promEsfuerzo}</p>
+            <p><strong>Promd ε:</strong> ${promDeformacion}</p>
+        `;
+    } else {
+        document.getElementById('promedios').innerHTML = '';
     }
-});
+}
+
+document.getElementById('btnGraficar').addEventListener('click', actualizarGrafica);
