@@ -3,45 +3,302 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detección de Objetos en Tiempo Real con ONNX.js</title>
-    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
-    <script src="camera.js"></script>
+    <title>Detección de Dígitos en Web</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
         }
-        h1 {
-            color: #333;
-        }
-        #container {
-            position: relative;
-            width: 640px; /* Ajusta este valor si tu video tiene otra resolución */
-            height: 480px; /* Ajusta este valor */
-            border: 2px solid #333;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            background-color: #000;
-        }
-        #videoElement, #canvasElement {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+        .container {
+            max-width: 1200px;
         }
     </style>
 </head>
-<body>
-    <h1>Detección de Objetos con ONNX.js</h1>
-    <div id="container">
-        <video id="videoElement" autoplay playsinline muted></video>
-        <canvas id="canvasElement"></canvas>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="container bg-white rounded-xl shadow-lg p-6 flex flex-col lg:flex-row space-y-6 lg:space-y-0 lg:space-x-6">
+        <!-- Panel Izquierdo: Resultados -->
+        <div class="w-full lg:w-1/3 bg-gray-50 p-4 rounded-lg shadow-inner flex flex-col">
+            <h2 class="text-xl font-bold mb-4 text-center text-gray-800">Resultados de Detección</h2>
+            <div id="results-list" class="flex-grow overflow-y-auto bg-white rounded-md p-2 space-y-2 text-sm text-gray-700">
+                <!-- Los resultados se insertarán aquí dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Panel Derecho: Controles y Visualización -->
+        <div class="w-full lg:w-2/3 flex flex-col space-y-6">
+            <!-- Controles -->
+            <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
+                <div class="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4">
+                    <label class="block text-sm font-medium text-gray-700">Modelo ONNX:</label>
+                    <input type="file" id="model-input" accept=".onnx" class="mt-1 flex-grow p-1 border border-gray-300 rounded-md shadow-sm text-sm">
+                </div>
+                <div class="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4">
+                    <label class="block text-sm font-medium text-gray-700">Intervalo (ms):</label>
+                    <input type="number" id="interval-input" value="500" class="mt-1 p-1 border border-gray-300 rounded-md shadow-sm w-full md:w-24 text-sm">
+                </div>
+                <div class="flex flex-col md:flex-row md:items-center md:space-x-4">
+                    <button id="start-button" class="flex-grow bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow-md">
+                        Iniciar Detección
+                    </button>
+                    <button id="stop-button" class="flex-grow bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow-md hidden">
+                        Detener Detección
+                    </button>
+                </div>
+            </div>
+
+            <!-- Visualización -->
+            <div class="relative bg-black rounded-lg overflow-hidden shadow-xl">
+                <video id="webcam-video" autoplay playsinline class="w-full h-full object-contain absolute hidden"></video>
+                <canvas id="detection-canvas" class="w-full h-full block"></canvas>
+                <div id="status-message" class="absolute bottom-0 left-0 right-0 bg-gray-800 bg-opacity-75 text-white p-2 text-center text-sm">
+                    Cargando...
+                </div>
+            </div>
+        </div>
     </div>
+
+    <script>
+        // Inicializar el entorno
+        const webcamVideo = document.getElementById('webcam-video');
+        const detectionCanvas = document.getElementById('detection-canvas');
+        const context = detectionCanvas.getContext('2d');
+        const modelInput = document.getElementById('model-input');
+        const startButton = document.getElementById('start-button');
+        const stopButton = document.getElementById('stop-button');
+        const intervalInput = document.getElementById('interval-input');
+        const resultsList = document.getElementById('results-list');
+        const statusMessage = document.getElementById('status-message');
+
+        let session;
+        let modelLoaded = false;
+        let isRunning = false;
+        let intervalId;
+        let frameCounter = 0;
+        const allDigits = new Set();
+        let modelConfig = {
+            inputShape: [1, 3, 640, 640], // Forma de entrada predeterminada
+            outputShape: null,
+            classNames: null
+        };
+
+        // Función para mostrar mensajes de estado
+        function updateStatus(message, isError = false) {
+            statusMessage.textContent = message;
+            statusMessage.style.backgroundColor = isError ? 'rgba(220, 38, 38, 0.75)' : 'rgba(31, 41, 55, 0.75)';
+        }
+
+        // --- Configuración de la Cámara y el Canvas ---
+        async function setupWebcam() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                webcamVideo.srcObject = stream;
+                webcamVideo.onloadedmetadata = () => {
+                    webcamVideo.play();
+                    detectionCanvas.width = webcamVideo.videoWidth;
+                    detectionCanvas.height = webcamVideo.videoHeight;
+                    // Dibujar el video en el canvas continuamente
+                    drawVideoFrame();
+                    updateStatus('Cámara lista. Por favor, selecciona un modelo ONNX.');
+                };
+            } catch (err) {
+                updateStatus('Error al acceder a la cámara: ' + err, true);
+                console.error("Error accessing webcam: ", err);
+            }
+        }
+
+        function drawVideoFrame() {
+            if (!isRunning) {
+                context.drawImage(webcamVideo, 0, 0, detectionCanvas.width, detectionCanvas.height);
+                requestAnimationFrame(drawVideoFrame);
+            }
+        }
+
+        // --- Carga y Procesamiento del Modelo ONNX ---
+        async function loadModel(file) {
+            updateStatus('Cargando modelo...');
+            const modelBlob = new Blob([file], { type: 'application/octet-stream' });
+            const modelUrl = URL.createObjectURL(modelBlob);
+            try {
+                session = await ort.InferenceSession.create(modelUrl);
+                console.log("Model loaded:", session.outputNames);
+                modelLoaded = true;
+                updateStatus('Modelo cargado correctamente. Haz clic en "Iniciar" para comenzar la detección.');
+                startButton.classList.remove('hidden');
+            } catch (e) {
+                updateStatus('Error al cargar el modelo: ' + e.message, true);
+                console.error('Error loading model:', e);
+            }
+        }
+
+        // Preprocesamiento de la imagen para el modelo YOLOv8
+        function preprocess(source) {
+            const [modelWidth, modelHeight] = [modelConfig.inputShape[2], modelConfig.inputShape[3]];
+            context.drawImage(source, 0, 0, modelWidth, modelHeight);
+            const imageData = context.getImageData(0, 0, modelWidth, modelHeight);
+            const data = imageData.data;
+            const float32Data = new Float32Array(modelWidth * modelHeight * 3);
+            let i = 0;
+            let j = 0;
+            while (i < data.length) {
+                // Normalizar y reorganizar RGB a BGR, y de HWC a CHW
+                float32Data[j] = data[i] / 255.0; // R
+                float32Data[j + modelWidth * modelHeight] = data[i + 1] / 255.0; // G
+                float32Data[j + modelWidth * modelHeight * 2] = data[i + 2] / 255.0; // B
+                i += 4;
+                j++;
+            }
+            return new ort.Tensor('float32', float32Data, modelConfig.inputShape);
+        }
+
+        // Postprocesamiento de los resultados de la inferencia
+        function postprocess(output, threshold = 0.5) {
+            const [rows, cols] = [output.dims[2], output.dims[1]];
+            const numClasses = cols - 4; // Bounding box + confidence
+            const boxes = [];
+            const data = output.data;
+
+            for (let i = 0; i < rows; i++) {
+                const confidence = data[i * cols + 4];
+                if (confidence >= threshold) {
+                    const classScores = data.slice(i * cols + 5, i * cols + cols);
+                    const classId = classScores.reduce((bestIndex, score, index) => score > classScores[bestIndex] ? index : bestIndex, 0);
+                    const classConf = classScores[classId];
+
+                    if (classConf >= threshold) {
+                        const x = data[i * cols];
+                        const y = data[i * cols + 1];
+                        const w = data[i * cols + 2];
+                        const h = data[i * cols + 3];
+
+                        const x1 = x - w / 2;
+                        const y1 = y - h / 2;
+                        const x2 = x + w / 2;
+                        const y2 = y + h / 2;
+
+                        boxes.push({ x1, y1, x2, y2, classId, confidence: classConf });
+                    }
+                }
+            }
+            return boxes;
+        }
+
+        // --- Bucle de Detección Principal ---
+        async function detectionLoop() {
+            if (!isRunning) return;
+
+            // Preprocesar el fotograma de la cámara para la inferencia
+            const inputTensor = preprocess(webcamVideo);
+            const inputName = session.inputNames[0];
+            const outputNames = session.outputNames;
+
+            try {
+                const results = await session.run({ [inputName]: inputTensor });
+                const outputTensor = results[outputNames[0]];
+
+                // Postprocesar los resultados
+                const detectedBoxes = postprocess(outputTensor);
+
+                // Dibujar el fotograma original en el canvas y luego los resultados
+                context.drawImage(webcamVideo, 0, 0, detectionCanvas.width, detectionCanvas.height);
+
+                let detectedThisFrame = [];
+                detectedBoxes.forEach(box => {
+                    const [modelWidth, modelHeight] = [modelConfig.inputShape[2], modelConfig.inputShape[3]];
+                    const scaleX = detectionCanvas.width / modelWidth;
+                    const scaleY = detectionCanvas.height / modelHeight;
+
+                    const x1 = box.x1 * scaleX;
+                    const y1 = box.y1 * scaleY;
+                    const width = (box.x2 - box.x1) * scaleX;
+                    const height = (box.y2 - box.y1) * scaleY;
+
+                    // Dibuja el recuadro
+                    context.strokeStyle = '#00ff00';
+                    context.lineWidth = 2;
+                    context.strokeRect(x1, y1, width, height);
+
+                    // Dibuja el texto
+                    const classId = box.classId;
+                    const digit = modelConfig.classNames ? modelConfig.classNames[classId] : classId;
+                    const conf = box.confidence.toFixed(2);
+                    context.fillStyle = '#ff0000';
+                    context.font = '20px Inter';
+                    context.fillText(`${digit} (${conf})`, x1, y1 - 10);
+                    detectedThisFrame.push(`${digit} (${conf})`);
+                    allDigits.add(digit);
+                });
+
+                // Actualizar la lista de resultados
+                if (detectedThisFrame.length > 0) {
+                    const listItem = document.createElement('p');
+                    listItem.textContent = `Frame ${frameCounter}: ${detectedThisFrame.join(', ')}`;
+                    resultsList.prepend(listItem);
+                } else {
+                    const listItem = document.createElement('p');
+                    listItem.textContent = `Frame ${frameCounter}: Ninguno`;
+                    resultsList.prepend(listItem);
+                }
+
+                // Limitar la lista a 50 elementos para evitar sobrecarga
+                while (resultsList.children.length > 50) {
+                    resultsList.lastChild.remove();
+                }
+
+                frameCounter++;
+                updateStatus(`Detectando... Dígitos totales: ${Array.from(allDigits).join(', ')}`);
+
+            } catch (e) {
+                console.error("Error during inference: ", e);
+                updateStatus('Error durante la detección: ' + e.message, true);
+                stopDetection();
+            }
+
+            intervalId = setTimeout(detectionLoop, parseInt(intervalInput.value));
+        }
+
+        // --- Control de Eventos ---
+        modelInput.addEventListener('change', (event) => {
+            if (event.target.files.length > 0) {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    loadModel(e.target.result);
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        });
+
+        startButton.addEventListener('click', () => {
+            if (modelLoaded && !isRunning) {
+                isRunning = true;
+                startButton.classList.add('hidden');
+                stopButton.classList.remove('hidden');
+                webcamVideo.classList.add('hidden'); // Oculta el video, ya que el canvas lo dibujará
+                detectionCanvas.classList.remove('hidden');
+                detectionLoop();
+            }
+        });
+
+        stopButton.addEventListener('click', () => {
+            stopDetection();
+        });
+
+        function stopDetection() {
+            if (isRunning) {
+                isRunning = false;
+                clearTimeout(intervalId);
+                startButton.classList.remove('hidden');
+                stopButton.classList.add('hidden');
+                webcamVideo.classList.remove('hidden');
+                updateStatus(`Proceso detenido. Dígitos totales: ${Array.from(allDigits).join(', ')}`);
+            }
+        }
+
+        // Inicializar la aplicación
+        setupWebcam();
+    </script>
 </body>
 </html>
