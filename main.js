@@ -187,5 +187,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 
+    document.getElementById("btnDatos").addEventListener("click", function () {
+        window.location.href = "frontend/detectorNum.html";
+
+    });
 
 });
