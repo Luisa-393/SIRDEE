@@ -249,8 +249,11 @@
                         const y1 = y - h / 2;
                         const x2 = x + w / 2;
                         const y2 = y + h / 2;
+                        
+                        // Calcular el área para ordenar por tamaño
+                        const area = w * h;
 
-                        boxes.push({ x1, y1, x2, y2, classId, confidence: classConf });
+                        boxes.push({ x1, y1, x2, y2, width: w, height: h, area, classId, confidence: classConf });
                     }
                 }
             }
@@ -268,12 +271,18 @@
             try {
                 const results = await session.run({ [inputName]: inputTensor });
                 const outputTensor = results[outputNames[0]];
-                const detectedBoxes = postprocess(outputTensor);
+                let detectedBoxes = postprocess(outputTensor);
 
                 context.drawImage(webcamVideo, 0, 0, detectionCanvas.width, detectionCanvas.height);
                 drawRoiBox();
 
-                // Ordenar las detecciones de izquierda a derecha
+                // Ordenar las detecciones por tamaño de caja (área) de forma descendente
+                detectedBoxes.sort((a, b) => b.area - a.area);
+                
+                // Limitar a los 6 dígitos más grandes
+                detectedBoxes = detectedBoxes.slice(0, 6);
+
+                // Ordenar las detecciones restantes de izquierda a derecha
                 detectedBoxes.sort((a, b) => a.x1 - b.x1);
                 
                 let detectedString = '';
