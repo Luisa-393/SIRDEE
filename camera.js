@@ -6,12 +6,12 @@ const canvas = document.getElementById('canvasElement');
 const ctx = canvas.getContext('2d');
 
 // Parámetros del modelo (ajustar según tu modelo ONNX)
-const modelPath = 'best.onnx'; // Ruta a tu modelo
+const modelPath = './best.onnx'; // Ruta a tu modelo
 const modelWidth = 640;
 const modelHeight = 640;
 
-// Inicializar la sesión de inferencia de ONNX
-const session = new onnx.InferenceSession();
+// Inicializar la sesión de inferencia de ONNX con ort
+let session = null;
 
 // Variable para controlar el bucle de detección
 let isModelLoaded = false;
@@ -21,7 +21,7 @@ let isModelLoaded = false;
 // ------------------------------------------------------------------
 async function loadModel() {
     try {
-        await session.loadModel(modelPath);
+        session = await ort.InferenceSession.create(modelPath);
         console.log("Modelo ONNX cargado exitosamente.");
         isModelLoaded = true;
     } catch (err) {
@@ -94,7 +94,7 @@ function preprocess(canvas) {
     const resizedData = resizedImageData.data;
 
     // Crear un tensor de entrada de ONNX.js
-    const inputTensor = new onnx.Tensor(new Float32Array(3 * modelWidth * modelHeight), 'float32', [1, 3, modelWidth, modelHeight]);
+    const inputTensor = new ort.Tensor(new Float32Array(3 * modelWidth * modelHeight), 'float32', [1, 3, modelWidth, modelHeight]);
     
     // Normalizar y reorganizar los datos de la imagen (NCHW)
     for (let i = 0; i < resizedData.length; i += 4) {
@@ -170,3 +170,4 @@ async function init() {
 
 // Iniciar todo
 init();
+
