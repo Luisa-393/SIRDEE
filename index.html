@@ -45,25 +45,24 @@
                 </table>
             </div>
             <!-- Botón para abrir el modal -->
-            <div class="mb-3 d-flex justify-content-end gap-2">
+            <!-- Primera fila de botones -->
+            <div class="mb-3 d-flex flex-wrap gap-2">
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTiempo">
                     Elegir lectura de tiempo
-                </button>
-                <!-- Botón para graficar -->
-                <button class="btn btn-outline-primary" id="btnGraficar">
-                    Graficar Deformaciones
                 </button>
                 <button class="btn btn-outline-primary" id="btnDatos">
                     Obtener datos peso (carga kg)
                 </button>
+            </div>
 
-                <button class="btn btn-secondary" onclick="window.location.href='camera.html'">
-                    Ir a Detección de Objetos
+            <!-- Segunda fila de botones -->
+            <div class="mb-3 d-flex flex-wrap gap-2 justify-content-end">
+                <button class="btn btn-outline-primary" id="btnGraficar">
+                    Graficar Deformaciones
                 </button>
                 <div class="dropdown">
                     <button class="btn btn-primary dropdown-toggle" type="button" id="btnFormatos"
                         data-bs-toggle="dropdown" aria-expanded="false">
-
                         Formato de ensayes
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="btnFormatos">
@@ -73,6 +72,7 @@
                     </ul>
                 </div>
             </div>
+
 
             <!-- Contenedor del gráfico -->
             <canvas id="graficaDeformaciones" width="600" height="300"></canvas>
@@ -126,4 +126,5 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="main.js"></script>
 </body>
+
 </html>
