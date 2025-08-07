@@ -47,16 +47,15 @@
                     <label class="block text-sm font-medium text-gray-700">Intervalo de detección (ms):</label>
                     <input type="number" id="interval-input" value="500" class="mt-1 p-1 border border-gray-300 rounded-md shadow-sm w-full md:w-24 text-sm">
                 </div>
-                <div class="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Mostrar solo la primera lectura:</label>
-                    <input type="checkbox" id="first-only-checkbox" class="ml-2 w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500">
-                </div>
                 <div class="flex flex-col md:flex-row md:items-center md:space-x-4">
                     <button id="start-button" class="flex-grow bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow-md hidden">
                         Iniciar Detección
                     </button>
                     <button id="stop-button" class="flex-grow bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow-md hidden">
                         Detener Detección
+                    </button>
+                    <button id="reset-roi-button" class="flex-grow bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow-md hidden">
+                        Reiniciar Área
                     </button>
                 </div>
             </div>
@@ -84,7 +83,7 @@
         const statusMessage = document.getElementById('status-message');
         const videoSourceSelect = document.getElementById('video-source');
         const videoFileInput = document.getElementById('video-file-input');
-        const firstOnlyCheckbox = document.getElementById('first-only-checkbox');
+        const resetRoiButton = document.getElementById('reset-roi-button');
 
         let session;
         let modelLoaded = false;
@@ -92,13 +91,18 @@
         let timeoutId;
         let frameCounter = 0;
         const allDigits = new Set();
-        const modelUrl = './best.onnx'; // URL de un modelo de ejemplo. ¡Cámbiala por la tuya!
+        const modelUrl = './best.onnx';
 
         let modelConfig = {
-            inputShape: [1, 3, 640, 640], // Forma de entrada predeterminada
+            inputShape: [1, 3, 640, 640],
             outputShape: null,
-            classNames: ['0','1','2','3','4','5','6','7','8','9']
+            classNames: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
         };
+
+        // Variables para la selección de la región de interés (ROI)
+        let roi = null;
+        let isDrawing = false;
+        let startPoint = { x: 0, y: 0 };
 
         // Función para mostrar mensajes de estado
         function updateStatus(message, isError = false) {
@@ -131,7 +135,6 @@
                 }
             } else if (source === 'file') {
                 videoFileInput.classList.remove('hidden');
-                // Espera a que el usuario suba un archivo para continuar
                 updateStatus('Por favor, sube un archivo de video para continuar.');
                 startButton.classList.add('hidden');
             }
@@ -162,7 +165,22 @@
         function drawVideoFrame() {
             if (!isRunning) {
                 context.drawImage(webcamVideo, 0, 0, detectionCanvas.width, detectionCanvas.height);
+                drawRoiBox();
                 requestAnimationFrame(drawVideoFrame);
+            }
+        }
+
+        function drawRoiBox() {
+            if (roi) {
+                context.strokeStyle = 'rgba(255, 0, 0, 0.8)';
+                context.lineWidth = 2;
+                context.strokeRect(roi.x, roi.y, roi.width, roi.height);
+                context.fillStyle = 'rgba(255, 0, 0, 0.2)';
+                context.fillRect(roi.x, roi.y, roi.width, roi.height);
+                
+                context.fillStyle = '#ff0000';
+                context.font = '16px Inter';
+                context.fillText('Área de Detección', roi.x, roi.y - 10);
             }
         }
 
@@ -172,8 +190,8 @@
                 session = await ort.InferenceSession.create(url);
                 console.log("Model loaded:", session.outputNames);
                 modelLoaded = true;
-                updateStatus('Modelo cargado correctamente. Haz clic en "Iniciar" para comenzar la detección.');
-                startButton.classList.remove('hidden');
+                updateStatus('Modelo cargado. Arrastra el ratón para definir el área de detección.');
+                resetRoiButton.classList.remove('hidden');
             } catch (e) {
                 updateStatus('Error al cargar el modelo: ' + e.message, true);
                 console.error('Error loading model:', e);
@@ -181,19 +199,27 @@
         }
 
         // Preprocesamiento de la imagen para el modelo YOLOv8
-        function preprocess(source) {
+        function preprocess(source, roi) {
             const [modelWidth, modelHeight] = [modelConfig.inputShape[2], modelConfig.inputShape[3]];
-            context.drawImage(source, 0, 0, modelWidth, modelHeight);
-            const imageData = context.getImageData(0, 0, modelWidth, modelHeight);
+            
+            // Crea un canvas temporal para el preprocesamiento
+            const tempCanvas = document.createElement('canvas');
+            const tempContext = tempCanvas.getContext('2d');
+            tempCanvas.width = modelWidth;
+            tempCanvas.height = modelHeight;
+            
+            // Dibuja el ROI del video en el canvas temporal, reescalando a 640x640
+            tempContext.drawImage(source, roi.x, roi.y, roi.width, roi.height, 0, 0, modelWidth, modelHeight);
+            
+            const imageData = tempContext.getImageData(0, 0, modelWidth, modelHeight);
             const data = imageData.data;
             const float32Data = new Float32Array(modelWidth * modelHeight * 3);
             let i = 0;
             let j = 0;
             while (i < data.length) {
-                // Normalizar y reorganizar RGB a BGR, y de HWC a CHW
-                float32Data[j] = data[i] / 255.0; // R
-                float32Data[j + modelWidth * modelHeight] = data[i + 1] / 255.0; // G
-                float32Data[j + modelWidth * modelHeight * 2] = data[i + 2] / 255.0; // B
+                float32Data[j] = data[i] / 255.0;
+                float32Data[j + modelWidth * modelHeight] = data[i + 1] / 255.0;
+                float32Data[j + modelWidth * modelHeight * 2] = data[i + 2] / 255.0;
                 i += 4;
                 j++;
             }
@@ -203,7 +229,6 @@
         // Postprocesamiento de los resultados de la inferencia
         function postprocess(output, threshold = 0.5) {
             const [rows, cols] = [output.dims[2], output.dims[1]];
-            const numClasses = cols - 4; // Bounding box + confidence
             const boxes = [];
             const data = output.data;
 
@@ -234,38 +259,33 @@
 
         // --- Bucle de Detección Principal ---
         async function detectionLoop() {
-            if (!isRunning) return;
+            if (!isRunning || !roi) return;
 
-            // Preprocesar el fotograma de la cámara para la inferencia
-            const inputTensor = preprocess(webcamVideo);
+            const inputTensor = preprocess(webcamVideo, roi);
             const inputName = session.inputNames[0];
             const outputNames = session.outputNames;
 
             try {
                 const results = await session.run({ [inputName]: inputTensor });
                 const outputTensor = results[outputNames[0]];
-
-                // Postprocesar los resultados
                 const detectedBoxes = postprocess(outputTensor);
 
-                // Dibujar el fotograma original en el canvas y luego los resultados
                 context.drawImage(webcamVideo, 0, 0, detectionCanvas.width, detectionCanvas.height);
+                drawRoiBox();
 
-                let detectedThisFrame = [];
-                let boxesToDraw = detectedBoxes;
+                // Ordenar las detecciones de izquierda a derecha
+                detectedBoxes.sort((a, b) => a.x1 - b.x1);
                 
-                // Si la opción "Mostrar solo la primera lectura" está marcada, toma solo el primer box
-                if (firstOnlyCheckbox.checked && detectedBoxes.length > 0) {
-                    boxesToDraw = [detectedBoxes[0]];
-                }
+                let detectedString = '';
 
-                boxesToDraw.forEach(box => {
+                detectedBoxes.forEach(box => {
                     const [modelWidth, modelHeight] = [modelConfig.inputShape[2], modelConfig.inputShape[3]];
-                    const scaleX = detectionCanvas.width / modelWidth;
-                    const scaleY = detectionCanvas.height / modelHeight;
-
-                    const x1 = box.x1 * scaleX;
-                    const y1 = box.y1 * scaleY;
+                    const scaleX = roi.width / modelWidth;
+                    const scaleY = roi.height / modelHeight;
+                    
+                    // Convertir las coordenadas del modelo a las coordenadas del canvas
+                    const x1 = roi.x + box.x1 * scaleX;
+                    const y1 = roi.y + box.y1 * scaleY;
                     const width = (box.x2 - box.x1) * scaleX;
                     const height = (box.y2 - box.y1) * scaleY;
 
@@ -281,22 +301,16 @@
                     context.fillStyle = '#ff0000';
                     context.font = '20px Inter';
                     context.fillText(`${digit} (${conf})`, x1, y1 - 10);
-                    detectedThisFrame.push(`${digit} (${conf})`);
+                    
+                    detectedString += digit;
                     allDigits.add(digit);
                 });
 
-                // Actualizar la lista de resultados
-                if (detectedThisFrame.length > 0) {
-                    const listItem = document.createElement('p');
-                    listItem.textContent = `Frame ${frameCounter}: ${detectedThisFrame.join(', ')}`;
-                    resultsList.prepend(listItem);
-                } else {
-                    const listItem = document.createElement('p');
-                    listItem.textContent = `Frame ${frameCounter}: Ninguno`;
-                    resultsList.prepend(listItem);
-                }
+                // Actualizar la lista de resultados con la cadena de dígitos
+                const listItem = document.createElement('p');
+                listItem.textContent = `Frame ${frameCounter}: ${detectedString.length > 0 ? detectedString : 'Ninguno'}`;
+                resultsList.prepend(listItem);
 
-                // Limitar la lista a 50 elementos para evitar sobrecarga
                 while (resultsList.children.length > 50) {
                     resultsList.lastChild.remove();
                 }
@@ -310,17 +324,63 @@
                 stopDetection();
             }
 
-            // El intervalo de tiempo permite controlar la frecuencia de la detección
             timeoutId = setTimeout(detectionLoop, parseInt(intervalInput.value));
         }
 
-        // --- Control de Eventos ---
+        // --- Control de la ROI (Región de Interés) ---
+        detectionCanvas.addEventListener('mousedown', (e) => {
+            if (!modelLoaded || isRunning) return;
+            isDrawing = true;
+            const rect = detectionCanvas.getBoundingClientRect();
+            startPoint.x = e.clientX - rect.left;
+            startPoint.y = e.clientY - rect.top;
+        });
+
+        detectionCanvas.addEventListener('mousemove', (e) => {
+            if (!isDrawing) return;
+            const rect = detectionCanvas.getBoundingClientRect();
+            const currentX = e.clientX - rect.left;
+            const currentY = e.clientY - rect.top;
+
+            const x = Math.min(startPoint.x, currentX);
+            const y = Math.min(startPoint.y, currentY);
+            const width = Math.abs(currentX - startPoint.x);
+            const height = Math.abs(currentY - startPoint.y);
+
+            roi = { x, y, width, height };
+
+            context.drawImage(webcamVideo, 0, 0, detectionCanvas.width, detectionCanvas.height);
+            drawRoiBox();
+        });
+
+        detectionCanvas.addEventListener('mouseup', () => {
+            if (!isDrawing) return;
+            isDrawing = false;
+            if (roi && roi.width > 10 && roi.height > 10) {
+                startButton.classList.remove('hidden');
+                updateStatus('Área de detección definida. Haz clic en "Iniciar" para comenzar.');
+            } else {
+                roi = null;
+                startButton.classList.add('hidden');
+                updateStatus('Área de detección no válida. Inténtalo de nuevo.');
+            }
+        });
+        
+        resetRoiButton.addEventListener('click', () => {
+            roi = null;
+            startButton.classList.add('hidden');
+            stopDetection();
+            updateStatus('Área de detección reiniciada. Dibuja un nuevo recuadro.');
+        });
+
+
+        // --- Control de Eventos de la Detección ---
         startButton.addEventListener('click', () => {
-            if (modelLoaded && !isRunning) {
+            if (modelLoaded && !isRunning && roi) {
                 isRunning = true;
                 startButton.classList.add('hidden');
                 stopButton.classList.remove('hidden');
-                webcamVideo.classList.add('hidden'); // Oculta el video, ya que el canvas lo dibujará
+                webcamVideo.classList.add('hidden');
                 detectionCanvas.classList.remove('hidden');
                 detectionLoop();
             }
@@ -330,7 +390,6 @@
             stopDetection();
         });
         
-        // Listener para el final del video
         webcamVideo.addEventListener('ended', () => {
             stopDetection();
             updateStatus(`Proceso de video finalizado. Dígitos totales: ${Array.from(allDigits).join(', ')}`);
