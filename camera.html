@@ -272,9 +272,25 @@
                 const results = await session.run({ [inputName]: inputTensor });
                 const outputTensor = results[outputNames[0]];
                 let detectedBoxes = postprocess(outputTensor);
-
+                
                 context.drawImage(webcamVideo, 0, 0, detectionCanvas.width, detectionCanvas.height);
                 drawRoiBox();
+
+                // Filtrar las cajas para mostrar solo las que están completamente dentro del ROI
+                detectedBoxes = detectedBoxes.filter(box => {
+                    const [modelWidth, modelHeight] = [modelConfig.inputShape[2], modelConfig.inputShape[3]];
+                    const scaleX = roi.width / modelWidth;
+                    const scaleY = roi.height / modelHeight;
+
+                    // Convertir las coordenadas del modelo a las coordenadas del canvas
+                    const x1 = roi.x + box.x1 * scaleX;
+                    const y1 = roi.y + box.y1 * scaleY;
+                    const x2 = roi.x + box.x2 * scaleX;
+                    const y2 = roi.y + box.y2 * scaleY;
+
+                    return x1 >= roi.x && y1 >= roi.y && x2 <= (roi.x + roi.width) && y2 <= (roi.y + roi.height);
+                });
+
 
                 // Ordenar las detecciones por tamaño de caja (área) de forma descendente
                 detectedBoxes.sort((a, b) => b.area - a.area);
