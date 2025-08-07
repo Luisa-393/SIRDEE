@@ -36,8 +36,20 @@
                     <p class="mt-1 flex-grow p-1 text-sm text-gray-900 font-semibold">best.onnx</p>
                 </div>
                 <div class="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4">
+                    <label class="block text-sm font-medium text-gray-700">Fuente de video:</label>
+                    <select id="video-source" class="mt-1 flex-grow p-1 border border-gray-300 rounded-md shadow-sm text-sm">
+                        <option value="webcam">Cámara web</option>
+                        <option value="file">Subir video local</option>
+                    </select>
+                    <input type="file" id="video-file-input" accept="video/*" class="mt-1 flex-grow p-1 border border-gray-300 rounded-md shadow-sm text-sm hidden">
+                </div>
+                <div class="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4">
                     <label class="block text-sm font-medium text-gray-700">Intervalo de detección (ms):</label>
                     <input type="number" id="interval-input" value="500" class="mt-1 p-1 border border-gray-300 rounded-md shadow-sm w-full md:w-24 text-sm">
+                </div>
+                <div class="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4">
+                    <label class="block text-sm font-medium text-gray-700">Mostrar solo la primera lectura:</label>
+                    <input type="checkbox" id="first-only-checkbox" class="ml-2 w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500">
                 </div>
                 <div class="flex flex-col md:flex-row md:items-center md:space-x-4">
                     <button id="start-button" class="flex-grow bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow-md hidden">
@@ -70,6 +82,9 @@
         const intervalInput = document.getElementById('interval-input');
         const resultsList = document.getElementById('results-list');
         const statusMessage = document.getElementById('status-message');
+        const videoSourceSelect = document.getElementById('video-source');
+        const videoFileInput = document.getElementById('video-file-input');
+        const firstOnlyCheckbox = document.getElementById('first-only-checkbox');
 
         let session;
         let modelLoaded = false;
@@ -82,7 +97,7 @@
         let modelConfig = {
             inputShape: [1, 3, 640, 640], // Forma de entrada predeterminada
             outputShape: null,
-            classNames: null
+            classNames: ['0','1','2','3','4','5','6','7','8','9']
         };
 
         // Función para mostrar mensajes de estado
@@ -92,26 +107,55 @@
         }
 
         // --- Configuración de la Cámara y el Canvas ---
-        async function setupWebcam() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                webcamVideo.srcObject = stream;
+        async function setupVideoSource() {
+            stopDetection();
+            webcamVideo.srcObject = null;
+            webcamVideo.src = '';
+            
+            const source = videoSourceSelect.value;
+            if (source === 'webcam') {
+                videoFileInput.classList.add('hidden');
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                    webcamVideo.srcObject = stream;
+                    webcamVideo.onloadedmetadata = () => {
+                        webcamVideo.play();
+                        detectionCanvas.width = webcamVideo.videoWidth;
+                        detectionCanvas.height = webcamVideo.videoHeight;
+                        drawVideoFrame();
+                        initializeApp();
+                    };
+                } catch (err) {
+                    updateStatus('Error al acceder a la cámara: ' + err, true);
+                    console.error("Error accessing webcam: ", err);
+                }
+            } else if (source === 'file') {
+                videoFileInput.classList.remove('hidden');
+                // Espera a que el usuario suba un archivo para continuar
+                updateStatus('Por favor, sube un archivo de video para continuar.');
+                startButton.classList.add('hidden');
+            }
+        }
+
+        videoSourceSelect.addEventListener('change', setupVideoSource);
+
+        videoFileInput.addEventListener('change', (event) => {
+            if (event.target.files.length > 0) {
+                const file = event.target.files[0];
+                const fileURL = URL.createObjectURL(file);
+                webcamVideo.src = fileURL;
                 webcamVideo.onloadedmetadata = () => {
                     webcamVideo.play();
                     detectionCanvas.width = webcamVideo.videoWidth;
                     detectionCanvas.height = webcamVideo.videoHeight;
-                    // Dibujar el video en el canvas continuamente
                     drawVideoFrame();
                     initializeApp();
                 };
-            } catch (err) {
-                updateStatus('Error al acceder a la cámara: ' + err, true);
-                console.error("Error accessing webcam: ", err);
             }
-        }
-        
+        });
+
         async function initializeApp() {
-            updateStatus('Cámara lista. Cargando modelo ONNX...');
+            updateStatus('Cámara/Video listo. Cargando modelo ONNX...');
             await loadModel(modelUrl);
         }
 
@@ -208,7 +252,14 @@
                 context.drawImage(webcamVideo, 0, 0, detectionCanvas.width, detectionCanvas.height);
 
                 let detectedThisFrame = [];
-                detectedBoxes.forEach(box => {
+                let boxesToDraw = detectedBoxes;
+                
+                // Si la opción "Mostrar solo la primera lectura" está marcada, toma solo el primer box
+                if (firstOnlyCheckbox.checked && detectedBoxes.length > 0) {
+                    boxesToDraw = [detectedBoxes[0]];
+                }
+
+                boxesToDraw.forEach(box => {
                     const [modelWidth, modelHeight] = [modelConfig.inputShape[2], modelConfig.inputShape[3]];
                     const scaleX = detectionCanvas.width / modelWidth;
                     const scaleY = detectionCanvas.height / modelHeight;
@@ -278,6 +329,12 @@
         stopButton.addEventListener('click', () => {
             stopDetection();
         });
+        
+        // Listener para el final del video
+        webcamVideo.addEventListener('ended', () => {
+            stopDetection();
+            updateStatus(`Proceso de video finalizado. Dígitos totales: ${Array.from(allDigits).join(', ')}`);
+        });
 
         function stopDetection() {
             if (isRunning) {
@@ -291,8 +348,7 @@
         }
 
         // Inicializar la aplicación
-        setupWebcam();
+        setupVideoSource();
     </script>
 </body>
 </html>
-
