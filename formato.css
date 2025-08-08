@@ -76,7 +76,13 @@ h2 {
 #linea-esfuerzo,
 #graficaDeformaciones {
   flex: 1 1 70%;
-  max-width: 75%;
+  max-width: 78%;
+}
+
+#graficaDeformaciones {
+    max-width: 450px !important;  /* la misma que pusimos en JS */
+    height: auto !important;
+    flex: none !important; /* para evitar que flex la estire */
 }
 
 #promedios {
@@ -94,3 +100,52 @@ h2 {
   font-size: 1.1rem;
   margin-bottom: 0.5rem;
 }
+
+/* tamaño del texto en los input type="number"  de la tabla datos generales*/
+.tabla-datos-generales input[type="number"] {
+  font-size: 0.8rem;
+  padding: 2px 4px;
+  height: auto;
+}
+
+/* Reduce el tamaño del texto del placeholder específicamente para el input de área */
+.placeholder-pequeno::placeholder {
+  font-size: 0.65rem;
+}
+ 
+/* ocultar div en donde va promedio de datos */
+#promedios:empty {
+  display: none;
+}*/
+
+
+
+/* Ajuste para PDF en tamaño A4 */
+#contenidoParaPDF {
+    width: 210mm;            /* ancho exacto A4 */
+    background: white;
+    padding: 10mm;           /* margen interno */
+    box-sizing: border-box;
+    font-size: 0.85rem;
+}
+
+/* Evita que el contenido se corte en medio de tablas o gráficos */
+#contenidoParaPDF * {
+    page-break-inside: avoid;
+}
+
+/* Imagen y gráficos ajustados */
+#contenidoParaPDF img,
+#contenidoParaPDF canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Ocultar botón al imprimir o exportar */
+@media print {
+    #btnGenerarPDF {
+        display: none;
+    }
+}
+
+  

@@ -178,11 +178,40 @@ document.addEventListener('DOMContentLoaded', function () {
         window.location.href = "cilindros.html";
     });
 
+
     document.getElementById('formatoMuretes').addEventListener('click', function () {
+        const datos = [];
+
+        document.querySelectorAll('#tablaDatos tbody tr').forEach(fila => {
+            const tiempo = fila.children[0].innerText.trim();
+            const promedio = fila.children[3].innerText.trim(); // Deformación Promedio
+
+            if (tiempo && promedio) {
+                datos.push({ tiempo, promedio });
+            }
+        });
+
+        // Guardar los datos en localStorage
+        localStorage.setItem('datosDeformaciones', JSON.stringify(datos));
+
+        // Redirigir a muretes.html
         window.location.href = "muretes.html";
     });
 
     document.getElementById('formatoPilas').addEventListener('click', function () {
+        const datos = [];
+
+        document.querySelectorAll('#tablaDatos tbody tr').forEach(fila => {
+            const tiempo = fila.children[0].innerText.trim();
+            const promedio = fila.children[3].innerText.trim(); // Deformación Promedio
+
+            if (tiempo && promedio) {
+                datos.push({ tiempo, promedio });
+            }
+        });
+
+        // Guardar los datos en localStorage
+        localStorage.setItem('datosDeformaciones', JSON.stringify(datos))
         window.location.href = "pilas.html";
     });
 

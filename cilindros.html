@@ -13,59 +13,59 @@
 <body class="bg-light">
 
     <div class="container py-4 d-flex justify-content-center">
-        <div class="card shadow p-4 w-100" style="max-width: 700px;">
+        <div id="contenidoParaPDF" class="card shadow p-4 w-100" style="max-width: 700px;">
 
             <!-- Logos: 50% cada uno, se adaptan al ancho -->
             <div class="row g-0 mb-3">
-                <div class="col-10">
-                    <img src="logo.png" alt="Logo 1" class="img-fluid w-100 object-fit-contain p-2">
+                <div class="col-3">
+                    <img src="UAGro_azul.png" alt="Logo 1" class="img-fluid w-100 object-fit-contain p-2">
                 </div>
-                <div class="col-1">
-                    <img src="logo FI.png" alt="Logo 2" class="img-fluid w-100 object-fit-contain p-2">
+                <div class="col-9">
+                    <img src="logo.png" alt="Logo 2" class="img-fluid w-100 object-fit-contain p-2">
                 </div>
             </div>
 
             <h2>FORMATO ENSAYE DE CILINDROS</h2>
 
             <!-- Tabla de datos generales -->
-            <div class="table-responsive mb-4">
+            <div class="table-responsive mb-0.5">
                 <table class="table table-bordered text-center align-middle tabla-datos-generales">
                     <tbody>
                         <tr>
                             <th>Cilindro #</th>
                             <td><input type="text" class="form-control text-center" value="1"></td>
                             <th>Fecha de elaboración</th>
-                            <td><input type="date" class="form-control text-center" value="2023-06-01"></td>
+                            <td><input type="date" class="form-control text-center" value="2024-06-01"></td>
                             <th>Longitud de control 1 (cm)</th>
-                            <td><input type="text" class="form-control text-center" value="8.15"></td>
+                            <td><input type="number" id="longitud1" class="form-control text-center" value="8.15"></td>
                         </tr>
                         <tr>
                             <th>Altura (cm)</th>
-                            <td><input type="text" class="form-control text-center" value="19.85"></td>
+                            <td><input type="number" class="form-control text-center" value="19.85"></td>
                             <th>Fecha de ruptura</th>
-                            <td><input type="date" class="form-control text-center" value="2023-06-28"></td>
+                            <td><input type="date" class="form-control text-center" value="2024-06-28"></td>
                             <th>Longitud de control 2 (cm)</th>
-                            <td><input type="text" class="form-control text-center" value="8.29"></td>
+                            <td><input type="number" id="longitud2" class="form-control text-center" value="8.29"></td>
                         </tr>
                         <tr>
                             <th>Diametro (cm)</th>
-                            <td><input type="text" class="form-control text-center" value="9.88"></td>
+                            <td><input type="number" class="form-control text-center" value="9.88"></td>
                             <th>Edad (días)</th>
-                            <td><input type="text" class="form-control text-center" value="28"></td>
+                            <td><input type="number" class="form-control text-center" value="28"></td>
                             <th>Longitud de control promedio (mm)</th>
-                            <td><input type="text" class="form-control text-center" value="82.175"></td>
+                            <td><input type="number" id="longitudPromedio" class="form-control-plaintext text-center" readonly></td>
                         </tr>
                         <tr>
                             <th>Peso (Kg)</th>
                             <td><input type="text" class="form-control text-center" value="-"></td>
                             <th>F'c de proyecto kg/cm²</th>
-                            <td><input type="text" class="form-control text-center" value="250"></td>
+                            <td><input type="number" class="form-control text-center" value="250"></td>
                             <th colspan="2" class="bg-light">Responsable del ensayo</th>
 
                         </tr>
                         <tr>
                             <th>Área (cm²)</th>
-                            <td><input type="text" class="form-control text-center" value="76.67"></td>
+                            <td><input type="number" id="areaInput" class="form-control text-center placeholder-pequeno" placeholder="Ingresa área (cm²)"></td>
                             <th>T.M.A.</th>
                             <td><input type="text" class="form-control text-center" value="3/4"></td>
                             <td colspan="2" class="bg-light texto-pequeño">Ing. Yazmin Osiris Linares González</td>
@@ -92,17 +92,18 @@
                 </table>
             </div>
 
-            <!-- Botones -->
-            <div class="mb-3 text-end">
-                <button class="btn btn-outline-primary" id="btnGraficar">Graficar </button>
-                <button class="btn btn-primary" id="btnGenerarPDF"> Generar PDF </button>
-            </div>
-
             <!-- Contenedor de gráfico y promedios lado a lado -->
             <div class="grafica-contenedor">
                 <canvas id="graficaDeformaciones" class="linea-esfuerzo" width="700" height="300"></canvas>
                 <div id="promedios"></div>
             </div>
+
+            <!-- Botones -->
+            <div class="mb-3 text-end">
+                <!--<button class="btn btn-outline-primary" id="btnGraficar">Graficar </button>-->
+                <button class="btn btn-primary" id="btnGenerarPDF"> Generar PDF </button>
+            </div>
+
         </div>
     </div>
     </div>
