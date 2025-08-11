@@ -234,7 +234,7 @@ function actualizarGrafica() {
     });
 
     // Mostrar promedios
-    if (esfuerzos.length > 0 && deformaciones.length > 0) {
+    /*if (esfuerzos.length > 0 && deformaciones.length > 0) {
         const promEsfuerzo = (esfuerzos.reduce((a, b) => a + b, 0) / esfuerzos.length).toFixed(2);
         const promDeformacion = (deformaciones.reduce((a, b) => a + b, 0) / deformaciones.length).toFixed(4);
 
@@ -245,7 +245,7 @@ function actualizarGrafica() {
         `;
     } else {
         document.getElementById('promedios').innerHTML = '';
-    }
+    }*/
 }
 
 
