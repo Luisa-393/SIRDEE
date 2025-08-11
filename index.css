@@ -8,7 +8,7 @@ body {
 h2 {
   text-align: center;
   color: #002e6d;
-  font-size: 1.3rem; 
+  font-size: 0.8rem; 
   font-weight: bold;
 }
 
@@ -28,8 +28,33 @@ h2 {
 .titulo-deformaciones {
   text-align: center;
   color: #003366;         /* Azul marino más oscuro */
-  font-size: 1.3rem;       /* Más pequeño que el h2 original */
+  font-size: 1.2rem;       /* Más pequeño que el h2 original */
   font-weight: bold;
   font-family: 'Segoe UI', sans-serif;
 }
 
+/* Reducir tamaño de la tabla de mediciones */
+#tablaDatos th,
+#tablaDatos td {
+    font-size: 0.74rem !important;   /* texto más pequeño */
+    padding: 2px 4px !important;    /* menos espacio interno */
+    line-height: 1.1;               /* más compacto */
+}
+
+#tablaDatos input {
+    font-size: 1.5rem !important;   /* texto pequeño en campos editables */
+    padding: 2px 4px !important;
+    height: auto !important;        /* evita que se estiren */
+}
+
+
+/* Reducir tamaño del texto en todos los botones */
+.btn {
+    font-size: 0.75rem !important; /* más pequeño que el tamaño por defecto */
+    padding: 4px 8px !important;   /* menos espacio interno para que se vean más compactos */
+}
+
+/* Opcional: hacer que el texto del dropdown sea también más pequeño */
+.dropdown-menu .dropdown-item {
+    font-size: 0.75rem !important;
+}

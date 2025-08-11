@@ -16,7 +16,7 @@
         <div id="contenidoParaPDF" class="card shadow p-4 w-100" style="max-width: 700px;">
 
             <!-- Logos: 50% cada uno, se adaptan al ancho -->
-            <div class="row g-0 mb-3">
+            <div class="row g-0 mb-1">
                 <div class="col-3">
                     <img src="UAGro_azul.png" alt="Logo 1" class="img-fluid w-100 object-fit-contain p-2">
                 </div>
@@ -27,51 +27,61 @@
 
             <h2>FORMATO ENSAYE DE CILINDROS</h2>
 
-            <!-- Tabla de datos generales -->
-            <div class="table-responsive mb-0.5">
-                <table class="table table-bordered text-center align-middle tabla-datos-generales">
-                    <tbody>
-                        <tr>
-                            <th>Cilindro #</th>
-                            <td><input type="text" class="form-control text-center" value="1"></td>
-                            <th>Fecha de elaboración</th>
-                            <td><input type="date" class="form-control text-center" value="2024-06-01"></td>
-                            <th>Longitud de control 1 (cm)</th>
-                            <td><input type="number" id="longitud1" class="form-control text-center" value="8.15"></td>
-                        </tr>
-                        <tr>
-                            <th>Altura (cm)</th>
-                            <td><input type="number" class="form-control text-center" value="19.85"></td>
-                            <th>Fecha de ruptura</th>
-                            <td><input type="date" class="form-control text-center" value="2024-06-28"></td>
-                            <th>Longitud de control 2 (cm)</th>
-                            <td><input type="number" id="longitud2" class="form-control text-center" value="8.29"></td>
-                        </tr>
-                        <tr>
-                            <th>Diametro (cm)</th>
-                            <td><input type="number" class="form-control text-center" value="9.88"></td>
-                            <th>Edad (días)</th>
-                            <td><input type="number" class="form-control text-center" value="28"></td>
-                            <th>Longitud de control promedio (mm)</th>
-                            <td><input type="number" id="longitudPromedio" class="form-control-plaintext text-center" readonly></td>
-                        </tr>
-                        <tr>
-                            <th>Peso (Kg)</th>
-                            <td><input type="text" class="form-control text-center" value="-"></td>
-                            <th>F'c de proyecto kg/cm²</th>
-                            <td><input type="number" class="form-control text-center" value="250"></td>
-                            <th colspan="2" class="bg-light">Responsable del ensayo</th>
+            <div id="bloque-datos-generales" style="page-break-inside: avoid;">
+                <!-- Tabla de datos generales -->
+                <div class="table-responsive mb-0.5">
+                    <table class="table table-bordered text-center align-middle tabla-datos-generales">
+                        <tbody>
+                            <tr>
+                                <th>Cilindro #</th>
+                                <td><input type="text" class="form-control text-center" value="1"></td>
+                                <th>Fecha de elaboración</th>
+                                <td><input type="date" class="form-control text-center" value="2024-06-01"></td>
+                                <th>Longitud de control 1 (cm)</th>
+                                <td><input type="number" id="longitud1" class="form-control text-center" value="8.15">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Altura (cm)</th>
+                                <td><input type="number" class="form-control text-center" value="19.85"></td>
+                                <th>Fecha de ruptura</th>
+                                <td><input type="date" class="form-control text-center" value="2024-06-28"></td>
+                                <th>Longitud de control 2 (cm)</th>
+                                <td><input type="number" id="longitud2" class="form-control text-center" value="8.29">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Diametro (cm)</th>
+                                <td><input type="number" class="form-control text-center" value="9.88"></td>
+                                <th>Edad (días)</th>
+                                <td><input type="number" class="form-control text-center" value="28"></td>
+                                <th>Longitud de control promedio (mm)</th>
+                                <td><input type="number" id="longitudPromedio"
+                                        class="form-control-plaintext text-center" readonly></td>
+                            </tr>
+                            <tr>
+                                <th>Peso (Kg)</th>
+                                <td><input type="text" class="form-control text-center" value="-"></td>
+                                <th>F'c de proyecto kg/cm²</th>
+                                <td><input type="number" class="form-control text-center" value="250"></td>
+                                <th colspan="2" class="bg-light">Responsable del ensayo</th>
 
-                        </tr>
-                        <tr>
-                            <th>Área (cm²)</th>
-                            <td><input type="number" id="areaInput" class="form-control text-center placeholder-pequeno" placeholder="Ingresa área (cm²)"></td>
-                            <th>T.M.A.</th>
-                            <td><input type="text" class="form-control text-center" value="3/4"></td>
-                            <td colspan="2" class="bg-light texto-pequeño">Ing. Yazmin Osiris Linares González</td>
-                        </tr>
-                    </tbody>
-                </table>
+                            </tr>
+                            <tr>
+                                <th>Área (cm²)</th>
+                                <td><input type="number" id="areaInput"
+                                        class="form-control text-center placeholder-pequeno"
+                                        placeholder="Ingresa área (cm²)"></td>
+                                <th>T.M.A.</th>
+                                <td><input type="text" class="form-control text-center" value="3/4"></td>
+                                <td colspan="2" class="bg-light texto-pequeño">
+                                    <input type="text" class="form-control text-center"
+                                        value="Ing. Yazmin Osiris Linares González">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Tabla de mediciones-->
@@ -94,7 +104,7 @@
 
             <!-- Contenedor de gráfico y promedios lado a lado -->
             <div class="grafica-contenedor">
-                <canvas id="graficaDeformaciones" class="linea-esfuerzo" width="700" height="300"></canvas>
+                <canvas id="graficaDeformaciones" class="linea-esfuerzo" width="800" height="400"></canvas>
                 <div id="promedios"></div>
             </div>
 
@@ -103,7 +113,6 @@
                 <!--<button class="btn btn-outline-primary" id="btnGraficar">Graficar </button>-->
                 <button class="btn btn-primary" id="btnGenerarPDF"> Generar PDF </button>
             </div>
-
         </div>
     </div>
     </div>
@@ -112,7 +121,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    
+
     <script src="formatos.js"></script>
 </body>
+
 </html>

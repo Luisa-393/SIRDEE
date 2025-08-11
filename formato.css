@@ -35,7 +35,12 @@ h2 {
   padding: 2px;
   margin-bottom: 7px;
   font-weight: bold;
-  font-size: 1rem; 
+  font-size: 0.8rem;
+}
+
+#btnGenerarPDF {
+  font-size: 0.85rem;
+
 }
 
 /* Reduce el tamaño de letra y padding para toda la tabla de datos generales */
@@ -43,7 +48,8 @@ h2 {
   font-size: 0.72rem !important;
   padding: 2px 4px !important;
   font-weight: 600;
-  line-height: 1.1; /* Compactar texto como en la imagen */
+  line-height: 1.1;
+  /* Compactar texto como en la imagen */
 }
 
 /* Reduce el tamaño de los inputs en la tabla */
@@ -76,13 +82,16 @@ h2 {
 #linea-esfuerzo,
 #graficaDeformaciones {
   flex: 1 1 70%;
-  max-width: 78%;
+
 }
 
 #graficaDeformaciones {
-    max-width: 450px !important;  /* la misma que pusimos en JS */
-    height: auto !important;
-    flex: none !important; /* para evitar que flex la estire */
+  width: 100% !important;
+  height: 400px !important;
+  /* más altura */
+  height: auto !important;
+  flex: none !important;
+  /* para evitar que flex la estire */
 }
 
 #promedios {
@@ -92,12 +101,12 @@ h2 {
   padding: 1rem;
   border: 1px solid #ccc;
   border-radius: 10px;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   line-height: 1.4;
 }
 
 #promedios h5 {
-  font-size: 1.1rem;
+  font-size: 0.78rem;
   margin-bottom: 0.5rem;
 }
 
@@ -112,40 +121,142 @@ h2 {
 .placeholder-pequeno::placeholder {
   font-size: 0.65rem;
 }
- 
+
 /* ocultar div en donde va promedio de datos */
 #promedios:empty {
   display: none;
-}*/
-
-
-
-/* Ajuste para PDF en tamaño A4 */
-#contenidoParaPDF {
-    width: 210mm;            /* ancho exacto A4 */
-    background: white;
-    padding: 10mm;           /* margen interno */
-    box-sizing: border-box;
-    font-size: 0.85rem;
 }
 
-/* Evita que el contenido se corte en medio de tablas o gráficos */
-#contenidoParaPDF * {
-    page-break-inside: avoid;
+*/ #contenidoParaPDF {
+  width: 216mm;
+  /* ancho carta */
+  min-height: 279mm;
+  /* alto carta */
+  margin: 0 auto;
+  /* centrado horizontal */
+  background: white;
+  padding: 10mm;
+  box-sizing: border-box;
+  font-size: 0.85rem;
+}
+
+/* Evitar cortes de tablas en medio */
+#bloque-tablas {
+  page-break-inside: avoid;
+}
+
+/* Forzar salto antes de gráfica */
+.salto-pagina {
+  page-break-before: always;
 }
 
 /* Imagen y gráficos ajustados */
 #contenidoParaPDF img,
 #contenidoParaPDF canvas {
-    max-width: 100%;
-    height: auto;
+  max-width: 100%;
+  height: auto;
 }
 
 /* Ocultar botón al imprimir o exportar */
 @media print {
-    #btnGenerarPDF {
-        display: none;
-    }
+  #btnGenerarPDF {
+    display: none;
+  }
 }
 
-  
+
+/* Quitar bordes y sombras en el PDF */
+#contenidoParaPDF {
+  box-shadow: none !important;
+  border: none !important;
+  background: white !important;
+}
+
+/* Para html2pdf: evitar bordes grises */
+html,
+body {
+  background: white !important;
+}
+
+
+/* Estilo reducido para la tabla de mediciones */
+#tablaDatos th,
+#tablaDatos td {
+  font-size: 0.75rem;
+  /* letra más pequeña */
+  padding: 2px 5px;
+  /* menos espacio interno */
+  line-height: 1.1;
+  /* más compacto */
+}
+
+#tablaDatos input {
+  font-size: 0.75rem;
+  padding: 2px 4px;
+  height: auto;
+}
+
+/* Reducir tamaño general de datos en la tabla de datos generales */
+.tabla-datos-generales th,
+.tabla-datos-generales td {
+  font-size: 0.65rem !important;
+  /* más pequeño que el actual */
+  padding: 1px 3px !important;
+  /* compacta las celdas */
+  line-height: 1.1;
+}
+
+.tabla-datos-generales input {
+  font-size: 0.65rem !important;
+  /* texto más pequeño en los inputs */
+  padding: 1px 3px !important;
+  height: auto !important;
+  /* evita que se alarguen */
+}
+
+
+#bloque-datos-generales {
+  page-break-inside: avoid;
+}
+
+/* Pero anulamos para la tabla de mediciones: */
+#tablaDatos,
+#tablaDatos tbody tr {
+  page-break-inside: auto !important;
+}
+
+
+
+/* Evitar que se corte el contenido en celdas, que se ajuste bien */
+#tablaDatos td,
+#tablaDatos th {
+  white-space: nowrap;
+  /* evitar saltos de línea dentro de celdas */
+  overflow: visible;
+  /* asegurarse que no se oculte contenido */
+  text-overflow: clip;
+  /* no mostrar puntos suspensivos */
+  max-width: none;
+  /* eliminar restricción de ancho que cause cortes */
+}
+
+/* Para inputs dentro de tablas, que se ajusten sin cortar */
+#tablaDatos input,
+.tabla-datos-generales input {
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  width: 100%;
+  /* que ocupen todo el ancho de la celda */
+  box-sizing: border-box;
+  /* padding dentro del ancho */
+}
+
+.tabla-datos-generales input[type="number"],
+.tabla-datos-generales input[type="text"],
+.tabla-datos-generales input[type="date"] {
+  min-width: 70px;
+  /* ver bien el número */
+  max-width: 150px;
+  box-sizing: border-box;
+}

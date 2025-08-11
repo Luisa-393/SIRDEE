@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 100); // Espera 100 ms para asegurar que el DOM y aria-hidden se actualicen
     });
 
-
+    //generar datos al enviar formulario
     document.getElementById('formTiempo').addEventListener('submit', function (event) {
         event.preventDefault();
 
@@ -23,9 +23,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (inicio >= 0 && fin >= inicio && salto > 0) {
             for (let tiempo = inicio; tiempo <= fin; tiempo += salto) {
-                // Generar deformaciones aleatorias entre 0.0000 y 5.0000
-                const valLVDT1 = (Math.random() * 5).toFixed(4);
-                const valLVDT2 = (Math.random() * 5).toFixed(4);
+                // Genera un número aleatorio entre -0.0000 y 5.0000
+                const valLVDT1 = (Math.random() * 5 - Math.random() * 0.0001).toFixed(4);
+                const valLVDT2 = (Math.random() * 5 - Math.random() * 0.0001).toFixed(4);
 
                 // Calcular el promedio
                 const promedio = ((parseFloat(valLVDT1) + parseFloat(valLVDT2)) / 2).toFixed(4);
@@ -33,11 +33,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Crear fila con los valores directamente dentro de las celdas
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
-        <td>${tiempo}</td>
-        <td contenteditable="true" class="editable lvdt1">${valLVDT1}</td>
-        <td contenteditable="true" class="editable lvdt2">${valLVDT2}</td>
-        <td class="promedio">${promedio}</td>
-    `;
+                    <td>${tiempo}</td>
+                    <td contenteditable="true" class="editable lvdt1">${valLVDT1}</td>
+                    <td contenteditable="true" class="editable lvdt2">${valLVDT2}</td>
+                    <td class="promedio">${promedio}</td>
+                `;
                 tbody.appendChild(fila);
             }
 
@@ -112,24 +112,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 labels: tiempos,
                 datasets: [
                     {
-                        label: 'LVDT1',
-                        data: deformaciones1,
-                        borderColor: 'blue',
-                        fill: false,
-                        tension: 0.2
+                        label: 'LVDT1', data: deformaciones1, borderColor: 'blue', fill: false, tension: 0.2
                     },
                     {
-                        label: 'LVDT2',
-                        data: deformaciones2,
-                        borderColor: 'green',
-                        fill: false,
-                        tension: 0.2
+                        label: 'LVDT2', data: deformaciones2, borderColor: 'green', fill: false, tension: 0.2
                     },
                     {
-                        label: 'Promedio',
-                        data: deformacionesPromedio,
-                        borderColor: 'red',
-                        borderDash: [5, 5],
+                        label: 'Promedio', data: deformacionesPromedio, borderColor: 'red', borderDash: [5, 5],
                         fill: false,
                         tension: 0.2
                     }
@@ -141,6 +130,20 @@ document.addEventListener('DOMContentLoaded', function () {
                     title: {
                         display: true,
                         text: 'Deformaciones LVDT1, LVDT2 y Promedio'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y != null) {
+                                    label += context.parsed.y.toFixed(4); // 🔹 Fuerza 4 decimales
+                                }
+                                return label;
+                            }
+                        }
                     }
                 },
                 scales: {
@@ -155,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    //Actualizar Graficar
+    //botón Graficar
     document.getElementById('btnGraficar').addEventListener('click', actualizarGrafica);
 
 

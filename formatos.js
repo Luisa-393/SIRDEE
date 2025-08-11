@@ -18,8 +18,7 @@ function calcularLongitudPromedioMM() {
             const deformacionPromedio = parseFloat(celdaPromedio.innerText.trim());
 
             if (!isNaN(deformacionPromedio) && promedioMM !== 0) {
-                const epsilon = (deformacionPromedio / promedioMM).toFixed(6);
-                celdaEpsilon.innerText = epsilon;
+                celdaEpsilon.innerText = (deformacionPromedio / promedioMM).toFixed(6);
             } else {
                 celdaEpsilon.innerText = '';
             }
@@ -41,10 +40,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const longitudControl = parseFloat(document.getElementById('longitudPromedio').value);
 
     datos.forEach(dato => {
-        const fila = document.createElement('tr');
         const promedio = parseFloat(dato.promedio);
-        const deformacionUnitaria = (promedio / longitudControl).toFixed(6);
+        const deformacionUnitaria = longitudControl ? (promedio / longitudControl).toFixed(6) : '';
 
+        const fila = document.createElement('tr');
         fila.innerHTML = `
             <td>${dato.tiempo}</td>
             <td>${dato.promedio}</td>
@@ -58,9 +57,6 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('longitud1').addEventListener('input', calcularLongitudPromedioMM);
     document.getElementById('longitud2').addEventListener('input', calcularLongitudPromedioMM);
 });
-
-//botón para forzar actualizar gráfica 
-//document.getElementById('btnGraficar').addEventListener('click', actualizarGrafica);
 
 // Botón generar PDF
 document.getElementById('btnGenerarPDF').addEventListener('click', function () {
@@ -76,7 +72,7 @@ document.getElementById('btnGenerarPDF').addEventListener('click', function () {
     img.src = imgData;
 
     // Aquí ajustamos el tamaño de la imagen (gráfica más pequeña)
-    img.style.width = '350px';   // Tamaño reducido (ajusta según necesites)
+    img.style.width = '450px';   // Tamaño reducido (ajusta según necesites)
     img.style.height = 'auto';
 
     canvasClon.replaceWith(img);
@@ -88,7 +84,7 @@ document.getElementById('btnGenerarPDF').addEventListener('click', function () {
     }
 
     const opciones = {
-        margin: 0,
+        margin: [10, 20, 10, 20], // [arriba, derecha, abajo, izquierda] en mm
         filename: 'formato-ensaye-cilindros.pdf',
         image: { type: 'jpeg', quality: 1 },
         html2canvas: {
@@ -101,16 +97,17 @@ document.getElementById('btnGenerarPDF').addEventListener('click', function () {
         },
         jsPDF: {
             unit: 'mm',
-            format: 'a4',
+            format: 'letter', //tamaño carta 
             orientation: 'portrait'
         },
-        pagebreak: { mode: 'css', before: '.salto-pagina' }
+        pagebreak: {
+            mode: ['css', 'legacy'],
+            before: '.salto-pagina'
+        }
     };
     //generar pdf
     html2pdf().set(opciones).from(contenidoClonado).save();
 });
-
-
 
 
 // Recalcular esfuerzos cuando cambia el área
@@ -132,8 +129,6 @@ document.getElementById('areaInput').addEventListener('input', function () {
 
     actualizarGrafica();
 });
-
-
 
 
 //actualizar esfuerzo al editar la tabla
@@ -185,41 +180,35 @@ function actualizarGrafica() {
             labels: deformaciones,
             datasets: [
                 {
-                    label: 'Sensor LVDT 01',
+                    label: 'Esfuerzo vs Deformación',
                     data: esfuerzos,
-                    borderColor: '#FFA500',
-                    backgroundColor: 'rgba(255,165,0,0.3)',
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0,123,255,0.3)',
                     tension: 0.4,
                     fill: false,
-                    pointRadius: 6,
-                    pointBackgroundColor: '#FFA500',
-                    borderWidth: 3
-                },
-                {
-                    label: 'Sensor LVDT 02',
-                    data: esfuerzos.map(e => e - 10), // ajustado
-                    borderColor: '#FFD580',
-                    backgroundColor: 'rgba(255,213,128,0.3)',
-                    tension: 0.4,
-                    fill: false,
-                    pointRadius: 6,
-                    pointBackgroundColor: '#FFD580',
-                    borderWidth: 3
+                    pointRadius: // si hay muchos datos, puntos pequeños
+                    deformaciones.length > 30 ? 1 :  //mas de 25 puntos  → muy pequeños
+                    deformaciones.length > 20 ? 2 : 
+                    5, 
+
+                    pointBackgroundColor: '#007bff',
+                    borderWidth: 2 //grosor de la linea grafica
                 }
             ]
         },
         options: {
             responsive: true,
             interaction: {
-                mode: 'nearest', intersect: false
+                mode: 'nearest',
+                intersect: false
             },
             plugins: {
                 tooltip: { enabled: true },
                 legend: { display: true, position: 'top' },
-                title: { display: true, text: 'Esfuerzo-deformación sensores LVDT' }
+                title: { display: true, text: 'Curva Esfuerzo - Deformación' }
             },
             scales: {
-                x: { title: { display: true, text: 'Deformación (ε)' } },
+                x: { title: { display: true, text: 'Deformación Unitaria (ε)' } },
                 y: { title: { display: true, text: 'Esfuerzo (σ)' } }
             }
         }
@@ -231,9 +220,9 @@ function actualizarGrafica() {
         const promDeformacion = (deformaciones.reduce((a, b) => a + b, 0) / deformaciones.length).toFixed(4);
 
         document.getElementById('promedios').innerHTML = `
-            <h5 class="fw-bold">Promedio de datos</h5>
-            <p><strong>Promd σ:</strong> ${promEsfuerzo}</p>
-            <p><strong>Promd ε:</strong> ${promDeformacion}</p>
+            <h5 class="fw-bold">Promedios</h5>
+            <p><strong>Prom σ:</strong> ${promEsfuerzo}</p>
+            <p><strong>Prom ε:</strong> ${promDeformacion}</p>
         `;
     } else {
         document.getElementById('promedios').innerHTML = '';
