@@ -274,3 +274,20 @@ body {
     max-width: none !important;
     width: 100% !important;
 }
+
+
+.tabla-datos-generales th,
+.tabla-datos-generales td {
+    font-size: 12px; /* más pequeño que en pantalla, caso para mueretes.html*/
+    white-space: nowrap; /* evita cortes en saltos de línea */
+}
+
+.tabla-datos-generales th {
+    word-break: break-word;
+    white-space: normal;
+}
+
+.tabla-datos-generales th,
+.tabla-datos-generales td {
+    padding: 2px 4px;
+}

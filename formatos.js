@@ -72,7 +72,7 @@ document.getElementById('btnGenerarPDF').addEventListener('click', function () {
     img.src = imgData;
 
     // Aquí ajustamos el tamaño de la imagen (gráfica más pequeña)
-    img.style.width = '450px';   // Tamaño reducido (ajusta según necesites)
+    img.style.width = '450px';   // Tamaño reducido 
     img.style.height = 'auto';
 
     canvasClon.replaceWith(img);
@@ -99,6 +99,7 @@ document.getElementById('btnGenerarPDF').addEventListener('click', function () {
     const ahora = new Date();
     const fechaHora = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}-${String(ahora.getHours()).padStart(2, '0')}-${String(ahora.getMinutes()).padStart(2, '0')}`;
 
+    
     const opciones = {
         margin: [10, 20, 10, 20], // [arriba, derecha, abajo, izquierda] en mm
         filename: `${nombreArchivo }-${fechaHora}.pdf`, // ← Nombre dinámico con fecha y hora
