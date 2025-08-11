@@ -247,6 +247,62 @@ function actualizarGrafica() {
 }
 
 
+
+function calcularPromedioLongitudMM() {
+    // Obtener valores en cm
+    const longitudes = [
+        parseFloat(document.getElementById('long1Lado1').value),
+        parseFloat(document.getElementById('long1Lado2').value),
+        parseFloat(document.getElementById('long2Lado1').value),
+        parseFloat(document.getElementById('long2Lado2').value),
+        parseFloat(document.getElementById('long3Lado1').value),
+        parseFloat(document.getElementById('long3Lado2').value)
+    ];
+
+    // Filtrar los que son números válidos
+    const validos = longitudes.filter(v => !isNaN(v));
+
+    if (validos.length === 6) {
+        // Promedio en cm
+        const promedioCM = validos.reduce((a, b) => a + b, 0) / 6;
+        // Convertir a mm
+        const promedioMM = promedioCM * 10;
+
+        // Asignar valor con 2 decimales
+        document.getElementById('promedioLongitud').value = promedioMM.toFixed(2);
+
+        // Recalcular deformación unitaria en la tabla
+        const filas = document.querySelectorAll('#tablaDatos tbody tr');
+        filas.forEach(fila => {
+            const celdaPromedio = fila.children[1]; // Deformación Promedio (mm)
+            const celdaEpsilon = fila.children[2];  // Deformación Unitaria (ε)
+            const deformacionPromedio = parseFloat(celdaPromedio.innerText.trim());
+
+            if (!isNaN(deformacionPromedio) && promedioMM !== 0) {
+                celdaEpsilon.innerText = (deformacionPromedio / promedioMM).toFixed(6);
+            } else {
+                celdaEpsilon.innerText = '';
+            }
+        });
+
+        actualizarGrafica();
+    } else {
+        document.getElementById('promedioLongitud').value = '';
+    }
+}
+
+// Ejecutar cuando se cambie cualquiera de los 6 campos
+['long1Lado1', 'long1Lado2', 'long2Lado1', 'long2Lado2', 'long3Lado1', 'long3Lado2']
+    .forEach(id => {
+        document.getElementById(id).addEventListener('input', calcularPromedioLongitudMM);
+    });
+
+// Calcular al cargar la página
+document.addEventListener('DOMContentLoaded', calcularPromedioLongitudMM);
+
+
+
+
 // ===== BOTÓN PARA LECTURA AUTOMÁTICA DE CARGA =====
 /*document.getElementById('btnAutoCarga').addEventListener('click', function () {
     const filas = document.querySelectorAll('#tablaDatos tbody tr');

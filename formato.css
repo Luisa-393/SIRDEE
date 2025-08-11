@@ -289,5 +289,23 @@ body {
 
 .tabla-datos-generales th,
 .tabla-datos-generales td {
-    padding: 2px 4px;
+    padding: 1px 3px;
+}
+
+
+/* Reducir más tamaño en celdas de input de la tabla de datos generales */
+.tabla-datos-generales input[type="text"],
+.tabla-datos-generales input[type="date"],
+.tabla-datos-generales input[type="number"] {
+   
+    padding: 1px 2px !important;  /* menos espacio interno */
+    height: 20px !important;      /* más bajas */
+    max-width: 85px !important;   /* ancho máximo más reducido */
+}
+
+
+/* Campo de longitud promedio más ancho en pilas */
+#promedioLongitud {
+    max-width: none !important;
+    width: 100% !important;
 }

@@ -28,7 +28,7 @@
             <h2>FORMATO ENSAYE DE PILAS</h2>
 
             <!-- Tabla de datos generales -->
-            <div class="table-responsive mb-4">
+            <div class="table-responsive mb-0.5">
                 <table class="table table-bordered text-center align-middle tabla-datos-generales">
                     <tbody>
                         <tr>
@@ -37,9 +37,11 @@
                             <th>Fecha de elaboración</th>
                             <td><input type="date" class="form-control text-center" value="2023-06-01"></td>
                             <th>Longitud de control 1 LADO #1 (cm)</th>
-                            <td><input type="number" class="form-control text-center" value="20.44"></td>
+                            <td><input type="number" id="long1Lado1" class="form-control text-center" value="20.44">
+                            </td>
                             <th>Longitud de control 1 LADO #2 (cm)</th>
-                            <td><input type="number" class="form-control text-center" value="19.89"></td>
+                            <td><input type="number" id="long1Lado2" class="form-control text-center" value="19.89">
+                            </td>
                         </tr>
                         <tr>
                             <th>Ancho promedio (cm)</th>
@@ -47,20 +49,24 @@
                             <th>Fecha de ruptura</th>
                             <td><input type="date" class="form-control text-center" value="2023-06-28"></td>
                             <th>Longitud de control 2 LADO #1 (cm)</th>
-                            <td><input type="number"class="form-control text-center" value="20.44"></td>
+                            <td><input type="number" id="long2Lado1" class="form-control text-center" value="20.44">
+                            </td>
                             <th>Longitud de control 2 LADO #2 (cm)</th>
-                            <td><input type="number" class="form-control text-center" value="19.85"></td>
+                            <td><input type="number" id="long2Lado2" class="form-control text-center" value="19.85">
+                            </td>
                         </tr>
                         <!-- Tercera fila -->
                         <tr>
                             <th>Largo promedio (cm)</th>
                             <td><input type="number" class="form-control text-center" value="25.65"></td>
                             <th>Edad (días)</th>
-                            <td><input type="number"class="form-control text-center" value="28"></td>
+                            <td><input type="number" class="form-control text-center" value="28"></td>
                             <th>Longitud de control 3 LADO #1 (cm)</th>
-                            <td><input type="number"class="form-control text-center" value="20.45"></td>
+                            <td><input type="number" id="long3Lado1" class="form-control text-center" value="20.45">
+                            </td>
                             <th>Longitud de control 3 LADO #2 (cm)</th>
-                            <td><input type="number" class="form-control text-center" value="19.85"></td>
+                            <td><input type="number" id="long3Lado2" class="form-control text-center" value="19.85">
+                            </td>
                         </tr>
                         <!-- Cuarta fila -->
                         <tr>
@@ -72,16 +78,19 @@
 
                             <!-- Valor correspondiente -->
                             <td colspan="3" rowspan="1">
-                                <input type="number" class="form-control text-center" value="201.53">
+                                <input type="number" id="promedioLongitud" class="form-control-plaintext text-center"
+                                    readonly>
                             </td>
                         </tr>
                         <tr>
                             <th>Área (cm²)</th>
-                            <td><input type="number" class="form-control text-center" value="331.85"></td>
+                            <td><input type="number" id="areaInput" class="form-control text-center" value="331.85">
+                            </td>
                             <th colspan="3" rowspan="1" class="align-middle">Responsable del ensaye</th>
 
                             <td colspan="3" rowspan="1">
-                                <input type="text" class="form-control text-center" value="Ing. Yazmin Osiris Linares González">
+                                <input type="text" class="form-control text-center"
+                                    value="Ing. Yazmin Osiris Linares González">
                             </td>
                         </tr>
                     </tbody>
@@ -115,7 +124,7 @@
             <!-- Botones -->
             <div class="mb-3 text-end">
                 <!--<button class="btn btn-outline-primary" id="btnGraficar">Graficar </button>-->
-                <button class="btn btn-primary" id="btnGraficar"> Generar PDF </button>
+                <button class="btn btn-primary" id="btnGenerarPDF"> Generar PDF </button>
             </div>
         </div>
     </div>
@@ -129,28 +138,38 @@
 
 
     <script>
-document.addEventListener('DOMContentLoaded', function () {
-    // Leer los datos guardados desde index.html
-    const datosGuardados = localStorage.getItem('datosDeformaciones');
+        document.addEventListener('DOMContentLoaded', function () {
+            const datos = JSON.parse(localStorage.getItem('datosDeformaciones')) || [];
+            const tbody = document.querySelector('#tablaDatos tbody');
+            const area = parseFloat(document.getElementById('areaInput').value);
+            const longitudControl = parseFloat(document.getElementById('promedioLongitud').value);
 
-    if (datosGuardados) {
-        const datos = JSON.parse(datosGuardados);
-        const tbody = document.querySelector('#tablaDatos tbody');
+            datos.forEach(dato => {
+                const promedio = parseFloat(dato.promedio);
+                const deformacionUnitaria = !isNaN(longitudControl) && longitudControl > 0
+                    ? (promedio / longitudControl).toFixed(6)
+                    : '';
 
-        datos.forEach(d => {
-            const fila = document.createElement('tr');
-            fila.innerHTML = `
-                <td>${d.tiempo}</td>
-                <td>${d.promedio}</td>
-                <td></td> <!-- Deformación unitaria (ε) -->
-                <td></td> <!-- Lectura de carga (Kg) -->
-                <td></td> <!-- Esfuerzo (σ) -->
-            `;
-            tbody.appendChild(fila);
+                const carga = parseFloat(dato.carga);
+                let esfuerzo = '';
+
+                if (!isNaN(carga) && carga > 0 && !isNaN(area) && area > 0) {
+                    esfuerzo = (carga / area).toFixed(2);
+                }
+
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
+            <td>${dato.tiempo}</td>
+            <td>${dato.promedio}</td>
+            <td class="deformacion">${deformacionUnitaria}</td>
+            <td contenteditable="true" class="editable carga">${!isNaN(carga) && carga > 0 ? carga : ''}</td>
+            <td class="esfuerzo">${esfuerzo}</td>
+        `;
+                tbody.appendChild(fila);
+            });
         });
-    }
-});
-</script>
+
+    </script>
 
 </body>
 
