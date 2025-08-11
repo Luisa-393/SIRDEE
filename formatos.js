@@ -119,7 +119,9 @@ document.getElementById('btnGenerarPDF').addEventListener('click', function () {
         },
         pagebreak: {
             mode: ['css', 'legacy'],
-            before: '.salto-pagina'
+            before: '.salto-pagina',
+            avoid: '#tablaDatos tr' // Evita que corte una fila en dos páginas
+
         }
     };
     //generar pdf
