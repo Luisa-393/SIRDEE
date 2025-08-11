@@ -77,15 +77,31 @@ document.getElementById('btnGenerarPDF').addEventListener('click', function () {
 
     canvasClon.replaceWith(img);
 
-    // Ocultar el botón en el clon para que no salga en el PDF
-    const botonClonado = contenidoClonado.querySelector('#btnGenerarPDF');
-    if (botonClonado) {
-        botonClonado.style.display = 'none';
+    // Ocultar los botones en el clon para que no salgan en el PDF
+    const botonClonadoPDF = contenidoClonado.querySelector('#btnGenerarPDF');
+    if (botonClonadoPDF) botonClonadoPDF.style.display = 'none';
+
+    const botonClonadoAuto = contenidoClonado.querySelector('#btnAutoCarga');
+    if (botonClonadoAuto) botonClonadoAuto.style.display = 'none';
+
+    // 🔹 Detectar tipo de formato desde el <h2>
+    const titulo = document.querySelector('h2').innerText.toLowerCase();
+    let nombreArchivo = 'formato-ensaye.pdf';
+    if (titulo.includes('cilindros')) {
+        nombreArchivo = 'formato-ensaye-cilindros.pdf';
+    } else if (titulo.includes('muretes')) {
+        nombreArchivo = 'formato-ensaye-muretes.pdf';
+    } else if (titulo.includes('pilas')) {
+        nombreArchivo = 'formato-ensaye-pilas.pdf';
     }
+
+    // Generar fecha y hora actual en formato YYYY-MM-DD-HH-MM
+    const ahora = new Date();
+    const fechaHora = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}-${String(ahora.getHours()).padStart(2, '0')}-${String(ahora.getMinutes()).padStart(2, '0')}`;
 
     const opciones = {
         margin: [10, 20, 10, 20], // [arriba, derecha, abajo, izquierda] en mm
-        filename: 'formato-ensaye-cilindros.pdf',
+        filename: `${nombreArchivo }-${fechaHora}.pdf`, // ← Nombre dinámico con fecha y hora
         image: { type: 'jpeg', quality: 1 },
         html2canvas: {
             scale: 3,
@@ -187,9 +203,9 @@ function actualizarGrafica() {
                     tension: 0.4,
                     fill: false,
                     pointRadius: // si hay muchos datos, puntos pequeños
-                    deformaciones.length > 30 ? 1 :  //mas de 25 puntos  → muy pequeños
-                    deformaciones.length > 20 ? 2 : 
-                    5, 
+                        deformaciones.length > 30 ? 1 :  //mas de 25 puntos  → muy pequeños
+                            deformaciones.length > 20 ? 2 :
+                                5,
 
                     pointBackgroundColor: '#007bff',
                     borderWidth: 2 //grosor de la linea grafica
@@ -228,3 +244,40 @@ function actualizarGrafica() {
         document.getElementById('promedios').innerHTML = '';
     }
 }
+
+
+// ===== BOTÓN PARA LECTURA AUTOMÁTICA DE CARGA =====
+/*document.getElementById('btnAutoCarga').addEventListener('click', function () {
+    const filas = document.querySelectorAll('#tablaDatos tbody tr');
+    const area = parseFloat(document.getElementById('areaInput').value);
+
+    if (isNaN(area) || area === 0) {
+        alert("Primero ingresa el área (cm²) para calcular el esfuerzo.");
+        return;
+    }
+
+    let cargaActual = 0; // empieza desde 0
+    let incremento = 5; // kg que aumentará cada paso
+    let i = 0;
+
+    const intervalo = setInterval(() => {
+        if (i >= filas.length) {
+            clearInterval(intervalo); // detener cuando no haya más filas
+            return;
+        }
+
+        const fila = filas[i];
+        const celdaCarga = fila.querySelector('.carga');
+        const celdaEsfuerzo = fila.querySelector('.esfuerzo');
+
+        cargaActual += incremento; // aumentar carga
+        celdaCarga.innerText = cargaActual.toFixed(2); // mostrar carga con 2 decimales
+
+        const esfuerzo = (cargaActual / area).toFixed(2);
+        celdaEsfuerzo.innerText = esfuerzo;
+
+        actualizarGrafica(); // refrescar gráfico y promedios
+
+        i++;
+    }, 500); // medio segundo entre lecturas
+});*/

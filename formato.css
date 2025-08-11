@@ -157,12 +157,14 @@ h2 {
   height: auto;
 }
 
-/* Ocultar botón al imprimir o exportar */
+/* Ocultar botones al imprimir o exportar */
 @media print {
-  #btnGenerarPDF {
+  #btnGenerarPDF,
+  #btnAutoCarga {
     display: none;
   }
 }
+
 
 
 /* Quitar bordes y sombras en el PDF */
@@ -259,4 +261,16 @@ body {
   /* ver bien el número */
   max-width: 150px;
   box-sizing: border-box;
+}
+
+/* Campo de responsable más ancho muretes*/
+.tabla-datos-generales td[colspan="2"] input[type="text"] {
+    max-width: none !important;
+    width: 100% !important;
+}
+
+/* Campo de responsable más ancho pilas*/
+.tabla-datos-generales td[colspan="3"] input[type="text"], input[type="number"] {
+    max-width: none !important;
+    width: 100% !important;
 }

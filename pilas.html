@@ -13,10 +13,10 @@
 <body class="bg-light">
 
     <div class="container py-4 d-flex justify-content-center">
-        <div class="card shadow p-4 w-100" style="max-width: 700px;">
+        <div id="contenidoParaPDF" class="card shadow p-4 w-100" style="max-width: 700px;">
 
             <!-- Logos: 50% cada uno, se adaptan al ancho -->
-            <div class="row g-0 mb-3">
+            <div class="row g-0 mb-1">
                 <div class="col-3">
                     <img src="UAGro_azul.png" alt="Logo 1" class="img-fluid w-100 object-fit-contain p-2">
                 </div>
@@ -37,47 +37,47 @@
                             <th>Fecha de elaboración</th>
                             <td><input type="date" class="form-control text-center" value="2023-06-01"></td>
                             <th>Longitud de control 1 LADO #1 (cm)</th>
-                            <td><input type="text" class="form-control text-center" value="20.44"></td>
+                            <td><input type="number" class="form-control text-center" value="20.44"></td>
                             <th>Longitud de control 1 LADO #2 (cm)</th>
-                            <td><input type="text" class="form-control text-center" value="19.89"></td>
+                            <td><input type="number" class="form-control text-center" value="19.89"></td>
                         </tr>
                         <tr>
                             <th>Ancho promedio (cm)</th>
-                            <td><input type="text" class="form-control text-center" value="12.94"></td>
+                            <td><input type="number" class="form-control text-center" value="12.94"></td>
                             <th>Fecha de ruptura</th>
                             <td><input type="date" class="form-control text-center" value="2023-06-28"></td>
                             <th>Longitud de control 2 LADO #1 (cm)</th>
-                            <td><input type="text" class="form-control text-center" value="20.44"></td>
+                            <td><input type="number"class="form-control text-center" value="20.44"></td>
                             <th>Longitud de control 2 LADO #2 (cm)</th>
-                            <td><input type="text" class="form-control text-center" value="19.85"></td>
+                            <td><input type="number" class="form-control text-center" value="19.85"></td>
                         </tr>
                         <!-- Tercera fila -->
                         <tr>
                             <th>Largo promedio (cm)</th>
-                            <td><input type="text" class="form-control text-center" value="25.65"></td>
+                            <td><input type="number" class="form-control text-center" value="25.65"></td>
                             <th>Edad (días)</th>
-                            <td><input type="text" class="form-control text-center" value="28"></td>
+                            <td><input type="number"class="form-control text-center" value="28"></td>
                             <th>Longitud de control 3 LADO #1 (cm)</th>
-                            <td><input type="text" class="form-control text-center" value="20.45"></td>
+                            <td><input type="number"class="form-control text-center" value="20.45"></td>
                             <th>Longitud de control 3 LADO #2 (cm)</th>
-                            <td><input type="text" class="form-control text-center" value="19.85"></td>
+                            <td><input type="number" class="form-control text-center" value="19.85"></td>
                         </tr>
                         <!-- Cuarta fila -->
                         <tr>
                             <th>Alto promedio (cm)</th>
-                            <td><input type="text" class="form-control text-center" value="47.70"></td>
+                            <td><input type="number" class="form-control text-center" value="47.70"></td>
 
                             <!-- Esta celda abarca Edad + Longitud 3 Lado 1 + Longitud 3 Lado 2 -->
                             <th colspan="3" rowspan="1" class="align-middle">Promedio de longitud de control (mm)</th>
 
                             <!-- Valor correspondiente -->
                             <td colspan="3" rowspan="1">
-                                <input type="text" class="form-control text-center" value="201.53">
+                                <input type="number" class="form-control text-center" value="201.53">
                             </td>
                         </tr>
                         <tr>
                             <th>Área (cm²)</th>
-                            <td><input type="text" class="form-control text-center" value="331.85"></td>
+                            <td><input type="number" class="form-control text-center" value="331.85"></td>
                             <th colspan="3" rowspan="1" class="align-middle">Responsable del ensaye</th>
 
                             <td colspan="3" rowspan="1">
@@ -106,21 +106,51 @@
                 </table>
             </div>
 
-            <!-- Botones -->
-            <div class="mb-3 text-end">
-                <button class="btn btn-outline-primary" id="btnGraficar">Graficar </button>
-                <button class="btn btn-primary" id="btnGraficar"> Generar PDF </button>
+            <!-- Contenedor de gráfico y promedios lado a lado -->
+            <div class="grafica-contenedor">
+                <canvas id="graficaDeformaciones" class="linea-esfuerzo" width="800" height="400"></canvas>
+                <div id="promedios"></div>
             </div>
 
-            <!-- Contenedor del gráfico -->
-            <canvas id="graficaDeformaciones" width="600" height="300"></canvas>
-
+            <!-- Botones -->
+            <div class="mb-3 text-end">
+                <!--<button class="btn btn-outline-primary" id="btnGraficar">Graficar </button>-->
+                <button class="btn btn-primary" id="btnGraficar"> Generar PDF </button>
+            </div>
         </div>
     </div>
     </div>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script src="formatos.js"></script>
+
+
+    <script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Leer los datos guardados desde index.html
+    const datosGuardados = localStorage.getItem('datosDeformaciones');
+
+    if (datosGuardados) {
+        const datos = JSON.parse(datosGuardados);
+        const tbody = document.querySelector('#tablaDatos tbody');
+
+        datos.forEach(d => {
+            const fila = document.createElement('tr');
+            fila.innerHTML = `
+                <td>${d.tiempo}</td>
+                <td>${d.promedio}</td>
+                <td></td> <!-- Deformación unitaria (ε) -->
+                <td></td> <!-- Lectura de carga (Kg) -->
+                <td></td> <!-- Esfuerzo (σ) -->
+            `;
+            tbody.appendChild(fila);
+        });
+    }
+});
+</script>
 
 </body>
 
