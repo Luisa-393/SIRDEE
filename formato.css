@@ -309,3 +309,7 @@ body {
     max-width: none !important;
     width: 100% !important;
 }
+
+#tablaDatos tr {
+  page-break-inside: avoid;  /* evita que una fila se corte en dos páginas */
+}

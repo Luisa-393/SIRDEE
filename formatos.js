@@ -1,8 +1,16 @@
 // FUNCIÓN PARA CALCULAR PROMEDIO EN MM
 function calcularLongitudPromedioMM() {
-    const l1 = parseFloat(document.getElementById('longitud1').value);
-    const l2 = parseFloat(document.getElementById('longitud2').value);
+    const input1 = document.getElementById('longitud1');
+    const input2 = document.getElementById('longitud2');
     const promedioInput = document.getElementById('longitudPromedio');
+
+    // Si alguno de los elementos no existe, salimos sin hacer nada
+    if (!input1 || !input2 || !promedioInput) {
+        return;
+    }
+
+    const l1 = parseFloat(input1.value);
+    const l2 = parseFloat(input2.value);
 
     if (!isNaN(l1) && !isNaN(l2)) {
         const promedioCM = (l1 + l2) / 2;
@@ -99,10 +107,10 @@ document.getElementById('btnGenerarPDF').addEventListener('click', function () {
     const ahora = new Date();
     const fechaHora = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}-${String(ahora.getHours()).padStart(2, '0')}-${String(ahora.getMinutes()).padStart(2, '0')}`;
 
-    
+
     const opciones = {
         margin: [10, 20, 10, 20], // [arriba, derecha, abajo, izquierda] en mm
-        filename: `${nombreArchivo }-${fechaHora}.pdf`, // ← Nombre dinámico con fecha y hora
+        filename: `${nombreArchivo}-${fechaHora}.pdf`, // ← Nombre dinámico con fecha y hora
         image: { type: 'jpeg', quality: 1 },
         html2canvas: {
             scale: 3,
@@ -211,7 +219,12 @@ function actualizarGrafica() {
                                 5,
 
                     pointBackgroundColor: '#007bff',
-                    borderWidth: 2 //grosor de la linea grafica
+                    //grosor de la linea grafica
+                    borderWidth:
+                        deformaciones.length > 25 ? 1 : // si hay más de 25 puntos, línea más delgada
+                            deformaciones.length > 15 ? 1.5 : // si hay entre 16 y 25 puntos, intermedio
+                                2, // menos de 15 puntos, grosor normal
+
                 }
             ]
         },
@@ -247,60 +260,6 @@ function actualizarGrafica() {
         document.getElementById('promedios').innerHTML = '';
     }*/
 }
-
-
-
-function calcularPromedioLongitudMM() {
-    // Obtener valores en cm
-    const longitudes = [
-        parseFloat(document.getElementById('long1Lado1').value),
-        parseFloat(document.getElementById('long1Lado2').value),
-        parseFloat(document.getElementById('long2Lado1').value),
-        parseFloat(document.getElementById('long2Lado2').value),
-        parseFloat(document.getElementById('long3Lado1').value),
-        parseFloat(document.getElementById('long3Lado2').value)
-    ];
-
-    // Filtrar los que son números válidos
-    const validos = longitudes.filter(v => !isNaN(v));
-
-    if (validos.length === 6) {
-        // Promedio en cm
-        const promedioCM = validos.reduce((a, b) => a + b, 0) / 6;
-        // Convertir a mm
-        const promedioMM = promedioCM * 10;
-
-        // Asignar valor con 2 decimales
-        document.getElementById('promedioLongitud').value = promedioMM.toFixed(2);
-
-        // Recalcular deformación unitaria en la tabla
-        const filas = document.querySelectorAll('#tablaDatos tbody tr');
-        filas.forEach(fila => {
-            const celdaPromedio = fila.children[1]; // Deformación Promedio (mm)
-            const celdaEpsilon = fila.children[2];  // Deformación Unitaria (ε)
-            const deformacionPromedio = parseFloat(celdaPromedio.innerText.trim());
-
-            if (!isNaN(deformacionPromedio) && promedioMM !== 0) {
-                celdaEpsilon.innerText = (deformacionPromedio / promedioMM).toFixed(6);
-            } else {
-                celdaEpsilon.innerText = '';
-            }
-        });
-
-        actualizarGrafica();
-    } else {
-        document.getElementById('promedioLongitud').value = '';
-    }
-}
-
-// Ejecutar cuando se cambie cualquiera de los 6 campos
-['long1Lado1', 'long1Lado2', 'long2Lado1', 'long2Lado2', 'long3Lado1', 'long3Lado2']
-    .forEach(id => {
-        document.getElementById(id).addEventListener('input', calcularPromedioLongitudMM);
-    });
-
-// Calcular al cargar la página
-document.addEventListener('DOMContentLoaded', calcularPromedioLongitudMM);
 
 
 

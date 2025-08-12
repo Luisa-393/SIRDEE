@@ -134,43 +134,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-    <script src="formatos.js"></script>
-
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const datos = JSON.parse(localStorage.getItem('datosDeformaciones')) || [];
-            const tbody = document.querySelector('#tablaDatos tbody');
-            const area = parseFloat(document.getElementById('areaInput').value);
-            const longitudControl = parseFloat(document.getElementById('promedioLongitud').value);
-
-            datos.forEach(dato => {
-                const promedio = parseFloat(dato.promedio);
-                const deformacionUnitaria = !isNaN(longitudControl) && longitudControl > 0
-                    ? (promedio / longitudControl).toFixed(6)
-                    : '';
-
-                const carga = parseFloat(dato.carga);
-                let esfuerzo = '';
-
-                if (!isNaN(carga) && carga > 0 && !isNaN(area) && area > 0) {
-                    esfuerzo = (carga / area).toFixed(2);
-                }
-
-                const fila = document.createElement('tr');
-                fila.innerHTML = `
-            <td>${dato.tiempo}</td>
-            <td>${dato.promedio}</td>
-            <td class="deformacion">${deformacionUnitaria}</td>
-            <td contenteditable="true" class="editable carga">${!isNaN(carga) && carga > 0 ? carga : ''}</td>
-            <td class="esfuerzo">${esfuerzo}</td>
-        `;
-                tbody.appendChild(fila);
-            });
-        });
-
-    </script>
+    <script src="pilas.js"></script>
 
 </body>
-
 </html>
