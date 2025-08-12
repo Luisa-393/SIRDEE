@@ -1,10 +1,4 @@
-
 document.addEventListener('DOMContentLoaded', function () {
-    // Initialize Supabase client
-    const supabaseUrl = 'https://deccldevwyqsleaxcglh.supabase.co'; // Replace with your Supabase URL
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlY2NsZGV2d3lxc2xlYXhjZ2xoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ4OTEwMTksImV4cCI6MjA3MDQ2NzAxOX0.wDy8DT_8QeDY0kjW3hInZ6u7ji9J2xSTl-qrdJsB88g'; // Replace with your Supabase anon key
-    const supabase = Supabase.createClient(supabaseUrl, supabaseKey);
-
     // ======= CONFIGURAR TIEMPO Y GENERAR FILAS =========
     const modalTiempoEl = document.getElementById('modalTiempo');
     const modalTiempo = new bootstrap.Modal(modalTiempoEl);
@@ -16,8 +10,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 100); // Espera 100 ms para asegurar que el DOM y aria-hidden se actualicen
     });
 
-    // Generar datos al enviar formulario
-    document.getElementById('formTiempo').addEventListener('submit', async function (event) {
+    //generar datos al enviar formulario
+    document.getElementById('formTiempo').addEventListener('submit', function (event) {
         event.preventDefault();
 
         const inicio = parseInt(document.getElementById('inicio').value);
@@ -28,54 +22,28 @@ document.addEventListener('DOMContentLoaded', function () {
         tbody.innerHTML = ''; // Limpiar tabla
 
         if (inicio >= 0 && fin >= inicio && salto > 0) {
-            try {
-                // Fetch data from Supabase
-                const { data, error } = await supabase
-                    .from('YOUR_TABLE_NAME') // Replace with your Supabase table name
-                    .select('tiempo, lvdt1, lvdt2')
-                    .gte('tiempo', inicio)
-                    .lte('tiempo', fin)
-                    .order('tiempo', { ascending: true });
+            for (let tiempo = inicio; tiempo <= fin; tiempo += salto) {
+                // Genera un número aleatorio entre -0.0000 y 5.0000
+                const valLVDT1 = (Math.random() * 5 - Math.random() * 0.0001).toFixed(4);
+                const valLVDT2 = (Math.random() * 5 - Math.random() * 0.0001).toFixed(4);
 
-                if (error) {
-                    console.error('Error fetching data from Supabase:', error);
-                    alert('Error al obtener datos de Supabase.');
-                    return;
-                }
+                // Calcular el promedio
+                const promedio = ((parseFloat(valLVDT1) + parseFloat(valLVDT2)) / 2).toFixed(4);
 
-                // Filter data based on salto (interval)
-                const filteredData = data.filter((row, index) => index % Math.round(salto) === 0);
-
-                if (filteredData.length === 0) {
-                    alert('No se encontraron datos en el rango especificado.');
-                    return;
-                }
-
-                // Populate table with fetched data
-                filteredData.forEach(row => {
-                    const valLVDT1 = parseFloat(row.lvdt1).toFixed(4);
-                    const valLVDT2 = parseFloat(row.lvdt2).toFixed(4);
-                    const promedio = ((parseFloat(valLVDT1) + parseFloat(valLVDT2)) / 2).toFixed(4);
-
-                    const fila = document.createElement('tr');
-                    fila.innerHTML = `
-                        <td>${row.tiempo}</td>
-                        <td contenteditable="true" class="editable lvdt1">${valLVDT1}</td>
-                        <td contenteditable="true" class="editable lvdt2">${valLVDT2}</td>
-                        <td class="promedio">${promedio}</td>
-                    `;
-                    tbody.appendChild(fila);
-                });
-
-                // Ocultar el modal
-                modalTiempo.hide();
-
-                // Actualizar gráfica con los datos cargados
-                actualizarGrafica();
-            } catch (err) {
-                console.error('Unexpected error:', err);
-                alert('Ocurrió un error inesperado al conectar con Supabase.');
+                // Crear fila con los valores directamente dentro de las celdas
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
+                    <td>${tiempo}</td>
+                    <td contenteditable="true" class="editable lvdt1">${valLVDT1}</td>
+                    <td contenteditable="true" class="editable lvdt2">${valLVDT2}</td>
+                    <td class="promedio">${promedio}</td>
+                `;
+                tbody.appendChild(fila);
             }
+
+            // SOLO ocultar el modal
+            modalTiempo.hide();
+
         } else {
             alert('Verifica que los valores de inicio, fin e intervalo sean válidos.');
         }
@@ -88,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Validar número decimal
             if (!/^-?\d*\.?\d*$/.test(valor)) {
-                e.target.innerText = valor.slice(0, -1); // Elimina el último carácter inválido
+                e.target.innerText = valor.slice(0, -1);  // Elimina el último carácter inválido
                 return;
             }
 
@@ -102,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const val2 = parseFloat(celdaLVDT2.innerText.trim());
 
             if (!isNaN(val1) && !isNaN(val2)) {
-                const promedio = ((val1 + val2) / 2).toFixed(4);
+                const promedio = ((val1 + val2) / 2).toFixed(4); //4 decimales
                 celdaPromedio.innerText = promedio;
             } else {
                 celdaPromedio.innerText = '';
@@ -144,24 +112,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 labels: tiempos,
                 datasets: [
                     {
-                        label: 'LVDT1',
-                        data: deformaciones1,
-                        borderColor: 'blue',
-                        fill: false,
-                        tension: 0.2
+                        label: 'LVDT1', data: deformaciones1, borderColor: 'blue', fill: false, tension: 0.2
                     },
                     {
-                        label: 'LVDT2',
-                        data: deformaciones2,
-                        borderColor: 'green',
-                        fill: false,
-                        tension: 0.2
+                        label: 'LVDT2', data: deformaciones2, borderColor: 'green', fill: false, tension: 0.2
                     },
                     {
-                        label: 'Promedio',
-                        data: deformacionesPromedio,
-                        borderColor: 'red',
-                        borderDash: [5, 5],
+                        label: 'Promedio', data: deformacionesPromedio, borderColor: 'red', borderDash: [5, 5],
                         fill: false,
                         tension: 0.2
                     }
@@ -182,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                     label += ': ';
                                 }
                                 if (context.parsed.y != null) {
-                                    label += context.parsed.y.toFixed(4);
+                                    label += context.parsed.y.toFixed(4); // 🔹 Fuerza 4 decimales
                                 }
                                 return label;
                             }
@@ -201,50 +158,70 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Botón Graficar
+    //botón Graficar
     document.getElementById('btnGraficar').addEventListener('click', actualizarGrafica);
 
+
     // ======= REDIRECCIONAMIENTO A FORMATOS ========
+
+    // Acciones al seleccionar cada formato
     document.getElementById('formatoCilindros').addEventListener('click', function () {
         const datos = [];
+
         document.querySelectorAll('#tablaDatos tbody tr').forEach(fila => {
             const tiempo = fila.children[0].innerText.trim();
             const promedio = fila.children[3].innerText.trim();
+
             if (tiempo && promedio) {
                 datos.push({ tiempo, promedio });
             }
         });
+
         localStorage.setItem('datosDeformaciones', JSON.stringify(datos));
         window.location.href = "cilindros.html";
     });
 
+
     document.getElementById('formatoMuretes').addEventListener('click', function () {
         const datos = [];
+
         document.querySelectorAll('#tablaDatos tbody tr').forEach(fila => {
             const tiempo = fila.children[0].innerText.trim();
-            const promedio = fila.children[3].innerText.trim();
+            const promedio = fila.children[3].innerText.trim(); // Deformación Promedio
+
             if (tiempo && promedio) {
                 datos.push({ tiempo, promedio });
             }
         });
+
+        // Guardar los datos en localStorage
         localStorage.setItem('datosDeformaciones', JSON.stringify(datos));
+
+        // Redirigir a muretes.html
         window.location.href = "muretes.html";
     });
 
     document.getElementById('formatoPilas').addEventListener('click', function () {
         const datos = [];
+
         document.querySelectorAll('#tablaDatos tbody tr').forEach(fila => {
             const tiempo = fila.children[0].innerText.trim();
-            const promedio = fila.children[3].innerText.trim();
+            const promedio = fila.children[3].innerText.trim(); // Deformación Promedio
+
             if (tiempo && promedio) {
                 datos.push({ tiempo, promedio });
             }
         });
-        localStorage.setItem('datosDeformaciones', JSON.stringify(datos));
+
+        // Guardar los datos en localStorage
+        localStorage.setItem('datosDeformaciones', JSON.stringify(datos))
         window.location.href = "pilas.html";
     });
 
+
     document.getElementById("btnDatos").addEventListener("click", function () {
         window.location.href = "frontend/detectorNum.html";
+
     });
+
 });
