@@ -80,7 +80,7 @@ document.getElementById('btnGenerarPDF').addEventListener('click', function () {
     img.src = imgData;
 
     // Aquí ajustamos el tamaño de la imagen (gráfica más pequeña)
-    img.style.width = '450px';   // Tamaño reducido 
+    img.style.width = '100%';   // Tamaño reducido 
     img.style.height = 'auto';
 
     canvasClon.replaceWith(img);
@@ -260,6 +260,8 @@ function actualizarGrafica() {
         document.getElementById('promedios').innerHTML = '';
     }*/
 }
+
+
 
 
 
