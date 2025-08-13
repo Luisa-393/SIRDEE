@@ -61,7 +61,48 @@
   </div>
 
   <script>
-    console.log("Página cargada - location.href =", window.location.href);
+    const supabaseUrl = "https://deccldevwyqsleaxcglh.supabase.co/rest/v1/Weight_carga";
+    const supabaseApiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlY2NsZGV2d3lxc2xlYXhjZ2xoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ4OTEwMTksImV4cCI6MjA3MDQ2NzAxOX0.wDy8DT_8QeDY0kjW3hInZ6u7ji9J2xSTl-qrdJsB88g";
+
+    // Guardará los registros ya enviados para evitar duplicados
+    const registrosSubidos = new Set();
+
+    let ultimoId = 0;  // inicializacion en 0
+
+    async function enviarPeso(frame, intervalMs, pesoKg) {
+      const clave = `${frame}-${pesoKg}`;
+      if (registrosSubidos.has(clave)) {
+        console.log(`⏩ Registro duplicado ignorado: Frame ${frame}, ${pesoKg} kg`);
+        return;
+      }
+
+      try {
+        const res = await fetch(supabaseUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": supabaseApiKey,
+            "Authorization": `Bearer ${supabaseApiKey}`,
+            "Prefer": "return=minimal"
+          },
+          body: JSON.stringify({
+            id: ultimoId++,   // <-- Incrementa el id en cada llamada
+            frame: frame,
+            intervalo_ms: intervalMs,
+            peso_enviado: pesoKg
+          })
+        });
+
+        if (res.ok) {
+          registrosSubidos.add(clave);
+          console.log(`✅ Enviado a Supabase: Frame ${frame}, ${pesoKg} kg`);
+        } else {
+          console.error("❌ Error al enviar:", await res.text());
+        }
+      } catch (err) {
+        console.error("❌ Error de conexión:", err);
+      }
+    }
 
     function uploadVideo() {
       const video = document.getElementById('videoFile').files[0];
@@ -74,17 +115,11 @@
     }
 
     function processVideo(event) {
-      console.log("Botón clicado - evitando recarga...");
-
-
-      if (event) event.preventDefault(); // <- PREVIENE el comportamiento por defecto del formulario
-      console.log("processVideo ejecutado");
+      if (event) event.preventDefault();
 
       const videoFile = document.getElementById('videoFile').files[0];
       const modelFile = document.getElementById('modelFile').files[0];
-      const intervalo = document.getElementById('intervalInput').value;
-
-      console.log("Archivos seleccionados:", videoFile, modelFile);
+      const intervalo = parseInt(document.getElementById('intervalInput').value);
 
       if (!videoFile || !modelFile) {
         document.getElementById('statusLabel').innerHTML = '<span class="text-danger">Selecciona un video y modelo.</span>';
@@ -98,20 +133,14 @@
 
       document.getElementById('statusLabel').innerHTML = '<span class="text-warning">Procesando...</span>';
 
-
-
-      console.log("Enviando fetch...");
-
-
       fetch("http://localhost:8000/procesar", {
         method: "POST",
         body: formData
       })
-        .then(res => res.text())  // <-- CAMBIO AQUÍ: en vez de .json()
+        .then(res => res.text())
         .then(text => {
-          console.log("Respuesta en texto plano:", text);  // <-- para ver qué devuelve realmente el backend
           try {
-            const data = JSON.parse(text);  // intenta convertirlo a JSON
+            const data = JSON.parse(text);
             const resultados = data.resultados;
             const tbody = document.querySelector('#resultTable tbody');
             tbody.innerHTML = ''; // limpiar tabla previa
@@ -128,6 +157,12 @@
               tr.appendChild(tdFrame);
               tr.appendChild(tdResultado);
               tbody.appendChild(tr);
+
+              // Enviar a Supabase si es número y no está repetido
+              const pesoKg = Number(r.resultado);
+              if (!isNaN(pesoKg)) {
+                enviarPeso(r.frame, intervalo, pesoKg);
+              }
             });
 
             document.getElementById('statusLabel').innerHTML = '<span class="text-success">Procesamiento finalizado.</span>';
@@ -142,8 +177,9 @@
           document.getElementById('statusLabel').innerHTML = '<span class="text-danger">Error durante el procesamiento.</span>';
         });
     }
-
   </script>
+
+
 </body>
 
 </html>
