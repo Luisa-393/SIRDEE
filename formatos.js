@@ -224,7 +224,6 @@ function actualizarGrafica() {
                         deformaciones.length > 25 ? 1 : // si hay más de 25 puntos, línea más delgada
                             deformaciones.length > 15 ? 1.5 : // si hay entre 16 y 25 puntos, intermedio
                                 2, // menos de 15 puntos, grosor normal
-
                 }
             ]
         },
@@ -241,6 +240,7 @@ function actualizarGrafica() {
             },
             scales: {
                 x: { title: { display: true, text: 'Deformación Unitaria (ε)' } },
+                
                 y: { title: { display: true, text: 'Esfuerzo (σ)' } }
             }
         }

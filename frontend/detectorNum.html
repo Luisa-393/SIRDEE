@@ -141,7 +141,30 @@
         .then(text => {
           try {
             const data = JSON.parse(text);
-            const resultados = data.resultados;
+            let resultados = data.resultados;
+
+
+            // --- VALIDACIÓN POR PROMEDIO ---
+            for (let i = 1; i < resultados.length - 1; i++) {
+              let anterior = Number(resultados[i - 1].resultado);
+              let siguiente = Number(resultados[i + 1].resultado);
+              let actual = Number(resultados[i].resultado);
+
+              if (!isNaN(anterior) && !isNaN(siguiente) && !isNaN(actual)) {
+                let promedio = (anterior + siguiente) / 2;
+                // Reemplazar actual por el más cercano entre anterior y siguiente
+                let candidato = Math.abs(promedio - anterior) < Math.abs(promedio - siguiente)
+                  ? anterior
+                  : siguiente;
+
+                // Si el actual no está cerca del promedio, lo corregimos
+                if (Math.abs(actual - promedio) > Math.abs(candidato - promedio)) {
+                  resultados[i].resultado = candidato;
+                }
+              }
+            }
+            // --- FIN VALIDACIÓN POR PROMEDIO ---
+
             const tbody = document.querySelector('#resultTable tbody');
             tbody.innerHTML = ''; // limpiar tabla previa
 
