@@ -10,44 +10,97 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 100); // Espera 100 ms para asegurar que el DOM y aria-hidden se actualicen
     });
 
+    
     //generar datos al enviar formulario
-    document.getElementById('formTiempo').addEventListener('submit', function (event) {
+    document.getElementById('formTiempo').addEventListener('submit', async function (event) {
         event.preventDefault();
 
         const inicio = parseInt(document.getElementById('inicio').value);
         const fin = parseInt(document.getElementById('fin').value);
         const salto = parseInt(document.getElementById('salto').value);
         const tbody = document.querySelector('#tablaDatos tbody');
-
         tbody.innerHTML = ''; // Limpiar tabla
 
-        if (inicio >= 0 && fin >= inicio && salto > 0) {
-            for (let tiempo = inicio; tiempo <= fin; tiempo += salto) {
-                // Genera un número aleatorio entre -0.0000 y 5.0000
-                const valLVDT1 = (Math.random() * 5 - Math.random() * 0.0001).toFixed(4);
-                const valLVDT2 = (Math.random() * 5 - Math.random() * 0.0001).toFixed(4);
+        if (inicio < 0 || fin < inicio || salto <= 0) {
+            alert('Verifica que los valores de inicio, fin e intervalo sean válidos.');
+            return;
+        }
 
-                // Calcular el promedio
-                const promedio = ((parseFloat(valLVDT1) + parseFloat(valLVDT2)) / 2).toFixed(4);
+        try {
+            // 1️⃣ Obtener el timestamp del primer registro para usar como referencia
+            const { data: primerRegistro, error: errPrimer } = await supabase
+                .from('Sensor_LDVT')
+                .select('time')
+                .order('time', { ascending: true })
+                .limit(1);
 
-                // Crear fila con los valores directamente dentro de las celdas
+            if (errPrimer || !primerRegistro || primerRegistro.length === 0) {
+                console.error('No se encontró registro inicial:', errPrimer);
+                alert('No se pudo obtener el tiempo inicial de la base de datos.');
+                return;
+            }
+
+            const fechaInicio = new Date(primerRegistro[0].time);
+
+            // 2️⃣ Traer todos los registros entre el inicio y fin relativo en segundos
+            // Calculamos los timestamps absolutos
+            const fechaFin = new Date(fechaInicio.getTime() + fin * 1000);
+
+            const { data, error } = await supabase
+                .from('Sensor_LDVT')
+                .select('Ldvt1, Ldvt2, time')
+                .gte('time', fechaInicio.toISOString())
+                .lte('time', fechaFin.toISOString())
+                .order('time', { ascending: true });
+
+            if (error) {
+                console.error('Error al obtener datos:', error);
+                alert('No se pudieron cargar los datos de deformaciones.');
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                alert('No se encontraron datos en el rango seleccionado.');
+                return;
+            }
+
+            // 3️⃣ Filtrar datos según el intervalo de salto
+            for (let t = inicio; t <= fin; t += salto) {
+                // Buscar el registro más cercano al tiempo t
+                const lectura = data.reduce((prev, curr) => {
+                    const segCurr = (new Date(curr.time) - fechaInicio) / 1000;
+                    const segPrev = (new Date(prev.time) - fechaInicio) / 1000;
+                    return Math.abs(segCurr - t) < Math.abs(segPrev - t) ? curr : prev;
+                });
+
+                const Ldvt1 = parseFloat(lectura.Ldvt1);
+                const Ldvt2 = parseFloat(lectura.Ldvt2);
+                const promedio = ((Ldvt1 + Ldvt2) / 2).toFixed(4);
+
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
-                    <td>${tiempo}</td>
-                    <td contenteditable="true" class="editable lvdt1">${valLVDT1}</td>
-                    <td contenteditable="true" class="editable lvdt2">${valLVDT2}</td>
-                    <td class="promedio">${promedio}</td>
-                `;
+                <td>${t}</td>
+                <td contenteditable="true" class="editable lvdt1">${Ldvt1.toFixed(4)}</td>
+                <td contenteditable="true" class="editable lvdt2">${Ldvt2.toFixed(4)}</td>
+                <td class="promedio">${promedio}</td>
+            `;
                 tbody.appendChild(fila);
             }
 
-            // SOLO ocultar el modal
             modalTiempo.hide();
 
-        } else {
-            alert('Verifica que los valores de inicio, fin e intervalo sean válidos.');
+            // Actualizar gráfica inmediatamente
+            actualizarGrafica();
+
+        } catch (err) {
+            console.error('Error inesperado:', err);
+            alert('Ocurrió un error al procesar los datos.');
         }
     });
+
+
+
+
 
     // ======= VALIDAR ENTRADA Y CALCULAR PROMEDIO ========
     document.addEventListener('input', function (e) {

@@ -20,16 +20,10 @@ function calcularLongitudPromedioMM() {
         // Recalcular deformación unitaria (ε) en cada fila
         const filas = document.querySelectorAll('#tablaDatos tbody tr');
         filas.forEach(fila => {
-            const celdaPromedio = fila.children[1]; // Deformación Promedio (mm)
-            const celdaEpsilon = fila.children[2];  // Deformación Unitaria (ε)
-
-            const deformacionPromedio = parseFloat(celdaPromedio.innerText.trim());
-
-            if (!isNaN(deformacionPromedio) && promedioMM !== 0) {
-                celdaEpsilon.innerText = (deformacionPromedio / promedioMM).toFixed(6);
-            } else {
-                celdaEpsilon.innerText = '';
-            }
+            const deformacionPromedio = parseFloat(fila.children[1].innerText.trim());
+            fila.children[2].innerText = (!isNaN(deformacionPromedio) && promedioMM !== 0)
+                ? (deformacionPromedio / promedioMM).toFixed(6)
+                : '';
         });
 
         actualizarGrafica(); //  actualizar gráfica si ε cambia
@@ -39,14 +33,15 @@ function calcularLongitudPromedioMM() {
 }
 
 
-// DOMContentLoaded → se ejecuta al cargar la página
-document.addEventListener('DOMContentLoaded', function () {
-    calcularLongitudPromedioMM();  // Se calcula al inicio
+// ======== CARGA INICIAL DE DATOS ========
+document.addEventListener('DOMContentLoaded', async function () {
+    calcularLongitudPromedioMM();
 
     const datos = JSON.parse(localStorage.getItem('datosDeformaciones')) || [];
     const tbody = document.querySelector('#tablaDatos tbody');
     const longitudControl = parseFloat(document.getElementById('longitudPromedio').value);
 
+    //crear filas con deformaciones
     datos.forEach(dato => {
         const promedio = parseFloat(dato.promedio);
         const deformacionUnitaria = longitudControl ? (promedio / longitudControl).toFixed(6) : '';
@@ -56,15 +51,70 @@ document.addEventListener('DOMContentLoaded', function () {
             <td>${dato.tiempo}</td>
             <td>${dato.promedio}</td>
             <td class="deformacion">${deformacionUnitaria}</td>
-            <td contenteditable="true" class="editable carga"></td>
+            <td contenteditable="true" class="editable carga"></td> 
             <td class="esfuerzo"></td>
         `;
         tbody.appendChild(fila);
     });
-    //recalcular al cambiar valores en longitud promedio
-    document.getElementById('longitud1').addEventListener('input', calcularLongitudPromedioMM);
-    document.getElementById('longitud2').addEventListener('input', calcularLongitudPromedioMM);
+
+
+
+
+
+
+    // ======== LECTURA AUTOMÁTICA DE CARGAS DESDE SUPABASE ========
+    const filas = document.querySelectorAll('#tablaDatos tbody tr');
+
+    for (let i = 0; i < filas.length; i++) {
+        // Valor de la columna "Lectura de Tiempo (seg)"
+        const tiempoConfig = parseInt(filas[i].children[0].innerText.trim(), 10);
+
+
+        // Ajustar consulta según tu configuración de lectura de tiempo
+        const { data, error } = await supabase
+            .from('Weight_carga')
+            .select('peso_enviado')
+            .eq('id', tiempoConfig) // Coincidencia exacta con la columna Tiempo
+            .order('id', { ascending: true })
+            .limit(1);
+
+        if (error) {
+            console.error("Error en Supabase:", error);
+            continue;
+        }
+
+        if (data && data.length > 0) {
+            const pesoKg = data[0].peso_enviado;
+            filas[i].querySelector('.carga').innerText = pesoKg;
+        }
+    }
+
+
+    // ======== CALCULAR ESFUERZO AL INGRESAR ÁREA ========
+    document.getElementById('areaInput').addEventListener('input', function () {
+        const nuevaArea = parseFloat(this.value);
+        filas.forEach(fila => {
+            const carga = parseFloat(fila.querySelector('.carga')?.innerText.trim());
+            const celdaEsfuerzo = fila.querySelector('.esfuerzo');
+
+            if (!isNaN(carga) && !isNaN(nuevaArea) && nuevaArea !== 0) {
+                const esfuerzo = (carga / nuevaArea).toFixed(2);
+                celdaEsfuerzo.innerText = esfuerzo;
+            } else {
+                celdaEsfuerzo.innerText = '';
+            }
+        });
+
+        actualizarGrafica();
+    });
 });
+
+
+// Escuchar cambios de longitud
+document.getElementById('longitud1').addEventListener('input', calcularLongitudPromedioMM);
+document.getElementById('longitud2').addEventListener('input', calcularLongitudPromedioMM);
+
+
 
 // Botón generar PDF
 document.getElementById('btnGenerarPDF').addEventListener('click', function () {
@@ -137,8 +187,11 @@ document.getElementById('btnGenerarPDF').addEventListener('click', function () {
 });
 
 
+
+
+
 // Recalcular esfuerzos cuando cambia el área
-document.getElementById('areaInput').addEventListener('input', function () {
+/*document.getElementById('areaInput').addEventListener('input', function () {
     const nuevaArea = parseFloat(this.value);
     const filas = document.querySelectorAll('#tablaDatos tbody tr');
 
@@ -155,7 +208,7 @@ document.getElementById('areaInput').addEventListener('input', function () {
     });
 
     actualizarGrafica();
-});
+});*/
 
 
 //actualizar esfuerzo al editar la tabla
@@ -240,26 +293,27 @@ function actualizarGrafica() {
             },
             scales: {
                 x: { title: { display: true, text: 'Deformación Unitaria (ε)' } },
-                
+
                 y: { title: { display: true, text: 'Esfuerzo (σ)' } }
             }
         }
     });
-
-    // Mostrar promedios
-    /*if (esfuerzos.length > 0 && deformaciones.length > 0) {
-        const promEsfuerzo = (esfuerzos.reduce((a, b) => a + b, 0) / esfuerzos.length).toFixed(2);
-        const promDeformacion = (deformaciones.reduce((a, b) => a + b, 0) / deformaciones.length).toFixed(4);
-
-        document.getElementById('promedios').innerHTML = `
-            <h5 class="fw-bold">Promedios</h5>
-            <p><strong>Prom σ:</strong> ${promEsfuerzo}</p>
-            <p><strong>Prom ε:</strong> ${promDeformacion}</p>
-        `;
-    } else {
-        document.getElementById('promedios').innerHTML = '';
-    }*/
 }
+
+// Mostrar promedios
+/*if (esfuerzos.length > 0 && deformaciones.length > 0) {
+    const promEsfuerzo = (esfuerzos.reduce((a, b) => a + b, 0) / esfuerzos.length).toFixed(2);
+    const promDeformacion = (deformaciones.reduce((a, b) => a + b, 0) / deformaciones.length).toFixed(4);
+
+    document.getElementById('promedios').innerHTML = `
+        <h5 class="fw-bold">Promedios</h5>
+        <p><strong>Prom σ:</strong> ${promEsfuerzo}</p>
+        <p><strong>Prom ε:</strong> ${promDeformacion}</p>
+    `;
+} else {
+    document.getElementById('promedios').innerHTML = '';
+}*/
+
 
 
 
@@ -301,3 +355,6 @@ function actualizarGrafica() {
         i++;
     }, 500); // medio segundo entre lecturas
 });*/
+
+
+
