@@ -33,7 +33,7 @@ function calcularLongitudPromedioMM() {
 }
 
 
-// ======== CARGA INICIAL DE DATOS ========
+// ======== Cargar datos al iniciar  ========
 document.addEventListener('DOMContentLoaded', async function () {
     calcularLongitudPromedioMM();
 
@@ -60,17 +60,14 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
 
-
-
-    // ======== LECTURA AUTOMÁTICA DE CARGAS DESDE SUPABASE ========
+    // ======== LECTURA AUTOMÁTICA DE CARGAS KG DESDE SUPABASE ========
     const filas = document.querySelectorAll('#tablaDatos tbody tr');
 
     for (let i = 0; i < filas.length; i++) {
         // Valor de la columna "Lectura de Tiempo (seg)"
         const tiempoConfig = parseInt(filas[i].children[0].innerText.trim(), 10);
 
-
-        // Ajustar consulta según tu configuración de lectura de tiempo
+        // Ajustar consulta según la configuración de lectura de tiempo
         const { data, error } = await supabase
             .from('Weight_carga')
             .select('peso_enviado')
@@ -115,9 +112,43 @@ document.getElementById('longitud1').addEventListener('input', calcularLongitudP
 document.getElementById('longitud2').addEventListener('input', calcularLongitudPromedioMM);
 
 
+// ===== FUNCIÓN DE VALIDACIÓN GENERAR PDF=====
+function validarDatosParaPDF() {
+    // Validar tabla de datos generales
+    const inputsGenerales = document.querySelectorAll('.tabla-datos-generales input');
+    for (let input of inputsGenerales) {
+        if (input.type !== 'readonly' && input.value.trim() === '') {
+            alert("Debes ingresar los datos faltantes.");
+            return false;
+        }
+    }
+
+    // Validar tabla de mediciones
+    const filas = document.querySelectorAll('#tablaDatos tbody tr');
+    if (filas.length === 0) {
+        alert("La tabla está vacía.");
+        return false;
+    }
+
+    for (let fila of filas) {
+        let celdas = fila.querySelectorAll('td');
+        for (let celda of celdas) {
+            if (celda.innerText.trim() === '' || celda.innerText.trim() === '-') {
+                alert("Debes ingresar los datos faltantes.");
+                return false;
+            }
+        }
+    }
+
+    return true; // Todo correcto
+}
+
 
 // Botón generar PDF
 document.getElementById('btnGenerarPDF').addEventListener('click', function () {
+    if (!validarDatosParaPDF()) return; // Si falla validación, no sigue
+
+
     const contenido = document.getElementById('contenidoParaPDF');
     const canvas = document.getElementById('graficaDeformaciones');
     const imgData = canvas.toDataURL('image/png', 1.0);
@@ -130,7 +161,7 @@ document.getElementById('btnGenerarPDF').addEventListener('click', function () {
     img.src = imgData;
 
     // Aquí ajustamos el tamaño de la imagen (gráfica más pequeña)
-    img.style.width = '100%';   // Tamaño reducido 
+    img.style.width = '100%';   // Tamaño grafica
     img.style.height = 'auto';
 
     canvasClon.replaceWith(img);

@@ -108,19 +108,51 @@ document.addEventListener('input', function (e) {
     }
 });
 
+// ===== FUNCIÓN DE VALIDACIÓN GENERAR PDF=====
+function validarDatosParaPDF() {
+    // Validar tabla de datos generales
+    const inputsGenerales = document.querySelectorAll('.tabla-datos-generales input');
+    for (let input of inputsGenerales) {
+        if (!input.readOnly && input.value.trim() === '') {
+            alert("Debes ingresar los datos faltantes.");
+            return false;
+        }
+    }
+
+    // Validar tabla de mediciones
+    const filas = document.querySelectorAll('#tablaDatos tbody tr');
+    if (filas.length === 0) {
+        alert("La tabla está vacía.");
+        return false;
+    }
+
+    for (let fila of filas) {
+        let celdas = fila.querySelectorAll('td');
+        for (let celda of celdas) {
+            if (celda.innerText.trim() === '' || celda.innerText.trim() === '-') {
+                alert("Debes ingresar los datos faltantes.");
+                return false;
+            }
+        }
+    }
+    return true; // Todo correcto
+}
+
 // ===== Generar PDF =====
 document.getElementById('btnGenerarPDF').addEventListener('click', function () {
+    if (!validarDatosParaPDF()) return; // Si falla validación, no sigue
+
     const contenido = document.getElementById('contenidoParaPDF');
     const canvas = document.getElementById('graficaDeformaciones');
     const imgData = canvas.toDataURL('image/png', 1.0);
 
     const contenidoClonado = contenido.cloneNode(true);
-    
+
     // Reemplazar canvas por imagen
     const canvasClon = contenidoClonado.querySelector('#graficaDeformaciones');
     const img = document.createElement('img');
     img.src = imgData;
-    img.style.width = '450px';
+    img.style.width = '100%'; // Tamaño grafica
     img.style.height = 'auto';
     canvasClon.replaceWith(img);
 
@@ -145,14 +177,25 @@ document.getElementById('btnGenerarPDF').addEventListener('click', function () {
             windowWidth: document.body.scrollWidth,
             windowHeight: document.body.scrollHeight
         },
-        jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'], avoid: '#tablaDatos tr' }
+
+        jsPDF: {
+            unit: 'mm',
+            format: 'letter', //tamaño carta 
+            orientation: 'portrait'
+        },
+        pagebreak: {
+            mode: ['css', 'legacy'],
+            before: '.salto-pagina',
+            avoid: '#tablaDatos tr' // Evita que corte una fila en dos páginas
+
+        }
     };
+    //generar pdf
     html2pdf().set(opciones).from(contenidoClonado).save();
 });
 
 // ===== Cargar datos al iniciar =====
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
     calcularPromedioLongitudMM();
 
     const datos = JSON.parse(localStorage.getItem('datosDeformaciones')) || [];
@@ -160,27 +203,57 @@ document.addEventListener('DOMContentLoaded', function () {
     const area = parseFloat(document.getElementById('areaInput').value);
     const longitudControl = parseFloat(document.getElementById('promedioLongitud').value);
 
+    //crear filas con deformaciones
     datos.forEach(dato => {
         const promedio = parseFloat(dato.promedio);
         const deformacionUnitaria = (!isNaN(longitudControl) && longitudControl > 0)
             ? (promedio / longitudControl).toFixed(6)
             : '';
 
-        const carga = parseFloat(dato.carga);
-        const esfuerzo = (!isNaN(carga) && carga > 0 && !isNaN(area) && area > 0)
-            ? (carga / area).toFixed(2)
-            : '';
+        const carga = ""; // todavía no se tiene
+        const esfuerzo = ""; // se calculará después cuando haya carga y área
+
 
         const fila = document.createElement('tr');
         fila.innerHTML = `
             <td>${dato.tiempo}</td>
             <td>${dato.promedio}</td>
             <td class="deformacion">${deformacionUnitaria}</td>
-            <td contenteditable="true" class="editable carga">${!isNaN(carga) && carga > 0 ? carga : ''}</td>
+            <td contenteditable="true" class="editable carga">${carga}</td> 
             <td class="esfuerzo">${esfuerzo}</td>
         `;
         tbody.appendChild(fila);
+
+        
     });
+
+    // ======== LECTURA AUTOMÁTICA DE CARGAS KG DESDE SUPABASE ========
+    const filas = document.querySelectorAll('#tablaDatos tbody tr');
+
+    for (let i = 0; i < filas.length; i++) {
+        // Valor de la columna "Lectura de Tiempo (seg)"
+        const tiempoConfig = parseInt(filas[i].children[0].innerText.trim(), 10);
+
+        // Ajustar consulta según la configuración de lectura de tiempo
+        const { data, error } = await supabase
+            .from('Weight_carga')
+            .select('peso_enviado')
+            .eq('id', tiempoConfig) // Coincidencia exacta con la columna Tiempo
+            .order('id', { ascending: true })
+            .limit(1);
+
+        if (error) {
+            console.error("Error en Supabase:", error);
+            continue;
+        }
+
+        if (data && data.length > 0) {
+            const pesoKg = data[0].peso_enviado;
+            filas[i].querySelector('.carga').innerText = pesoKg;
+        }
+    }
+
+    actualizarGrafica();
 });
 
 // ===== Escuchar cambios en longitudes =====

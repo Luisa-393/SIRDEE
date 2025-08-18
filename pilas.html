@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Formato de Ensaye de Cilindros</title>
+    <title>Formato de Ensaye de pilas</title>
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="formato.css">
@@ -84,7 +84,8 @@
                         </tr>
                         <tr>
                             <th>Área (cm²)</th>
-                            <td><input type="number" id="areaInput" class="form-control text-center" placeholder="331.85">
+                            <td><input type="number" id="areaInput" class="form-control text-center"
+                                    placeholder="331.85">
                             </td>
                             <th colspan="3" rowspan="1" class="align-middle">Responsable del ensaye</th>
 
@@ -115,10 +116,9 @@
                 </table>
             </div>
 
-            <!-- Contenedor de gráfico y promedios lado a lado -->
+            <!-- Contenedor de gráfico-->
             <div class="grafica-contenedor">
                 <canvas id="graficaDeformaciones" class="linea-esfuerzo" width="800" height="400"></canvas>
-              
             </div>
 
             <!-- Botones -->
@@ -133,8 +133,17 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        // Configuración de Supabase
+        const supabaseUrl = 'https://deccldevwyqsleaxcglh.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlY2NsZGV2d3lxc2xlYXhjZ2xoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ4OTEwMTksImV4cCI6MjA3MDQ2NzAxOX0.wDy8DT_8QeDY0kjW3hInZ6u7ji9J2xSTl-qrdJsB88g';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    </script>
 
     <script src="pilas.js"></script>
 
 </body>
+
 </html>
