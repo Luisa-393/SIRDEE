@@ -144,10 +144,10 @@ function validarDatosParaPDF() {
 }
 
 
-// Botón generar PDF
-document.getElementById('btnGenerarPDF').addEventListener('click', function () {
-    if (!validarDatosParaPDF()) return; // Si falla validación, no sigue
 
+// Botón generar PDF
+document.getElementById('btnGenerarPDF').addEventListener('click', async function () {
+    if (!validarDatosParaPDF()) return; // Si falla validación, no sigue
 
     const contenido = document.getElementById('contenidoParaPDF');
     const canvas = document.getElementById('graficaDeformaciones');
@@ -159,39 +159,29 @@ document.getElementById('btnGenerarPDF').addEventListener('click', function () {
     const canvasClon = contenidoClonado.querySelector('#graficaDeformaciones');
     const img = document.createElement('img');
     img.src = imgData;
-
-    // Aquí ajustamos el tamaño de la imagen (gráfica más pequeña)
-    img.style.width = '100%';   // Tamaño grafica
+    img.style.width = '100%';
     img.style.height = 'auto';
-
     canvasClon.replaceWith(img);
 
-    // Ocultar los botones en el clon para que no salgan en el PDF
+    // Ocultar los botones en el clon
     const botonClonadoPDF = contenidoClonado.querySelector('#btnGenerarPDF');
     if (botonClonadoPDF) botonClonadoPDF.style.display = 'none';
-
     const botonClonadoAuto = contenidoClonado.querySelector('#btnAutoCarga');
     if (botonClonadoAuto) botonClonadoAuto.style.display = 'none';
 
-    // 🔹 Detectar tipo de formato desde el <h2>
+    // Nombre dinámico
     const titulo = document.querySelector('h2').innerText.toLowerCase();
     let nombreArchivo = 'formato-ensaye.pdf';
-    if (titulo.includes('cilindros')) {
-        nombreArchivo = 'formato-ensaye-cilindros.pdf';
-    } else if (titulo.includes('muretes')) {
-        nombreArchivo = 'formato-ensaye-muretes.pdf';
-    } else if (titulo.includes('pilas')) {
-        nombreArchivo = 'formato-ensaye-pilas.pdf';
-    }
+    if (titulo.includes('cilindros')) nombreArchivo = 'formato-ensaye-cilindros.pdf';
+    else if (titulo.includes('muretes')) nombreArchivo = 'formato-ensaye-muretes.pdf';
+    else if (titulo.includes('pilas')) nombreArchivo = 'formato-ensaye-pilas.pdf';
 
-    // Generar fecha y hora actual en formato YYYY-MM-DD-HH-MM
     const ahora = new Date();
     const fechaHora = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}-${String(ahora.getHours()).padStart(2, '0')}-${String(ahora.getMinutes()).padStart(2, '0')}`;
 
-
     const opciones = {
-        margin: [10, 20, 10, 20], // [arriba, derecha, abajo, izquierda] en mm
-        filename: `${nombreArchivo}-${fechaHora}.pdf`, // ← Nombre dinámico con fecha y hora
+        margin: [10, 20, 10, 20],
+        filename: `${nombreArchivo}-${fechaHora}.pdf`,
         image: { type: 'jpeg', quality: 1 },
         html2canvas: {
             scale: 3,
@@ -201,27 +191,61 @@ document.getElementById('btnGenerarPDF').addEventListener('click', function () {
             windowWidth: document.body.scrollWidth,
             windowHeight: document.body.scrollHeight
         },
-        jsPDF: {
-            unit: 'mm',
-            format: 'letter', //tamaño carta 
-            orientation: 'portrait'
-        },
-        pagebreak: {
-            mode: ['css', 'legacy'],
-            before: '.salto-pagina',
-            avoid: '#tablaDatos tr' // Evita que corte una fila en dos páginas
-
-        }
+        jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'], before: '.salto-pagina', avoid: '#tablaDatos tr' }
     };
-    //generar pdf
-    html2pdf().set(opciones).from(contenidoClonado).save();
+
+    // Generar PDF y luego eliminar datos
+    await html2pdf().set(opciones).from(contenidoClonado).save();
+
+    // 🔹 ELIMINAR DATOS DESPUÉS DE GENERAR EL PDF
+
+    // 1. Vaciar tabla en el HTML
+    document.querySelector('#tablaDatos tbody').innerHTML = "";
+
+    // 2. Eliminar del LocalStorage
+    localStorage.removeItem('datosDeformaciones');
+
+    // 3. Eliminar datos de Supabase
+    try {
+        // Borrar todos los registros de Weight_carga
+        await supabase.from('Weight_carga').delete().neq('id', 0); // elimina todos
+
+        // Borrar todos los registros de Sensor_LDVT
+        await supabase.from('Sensor_LDVT').delete().neq('id', 0);
+
+        console.log("Datos eliminados correctamente de Supabase");
+    } catch (error) {
+        console.error("Error al eliminar en Supabase:", error);
+    }
+
+    // 4. Limpiar campo Responsable del ensayo
+    const responsableInput = document.querySelector('input[value="Ing. Yazmin Osiris Linares González"]');
+    if (responsableInput) responsableInput.value = "";
+
+    // 5. Recargar la página para actualizar gráfica y tabla
+    setTimeout(() => {
+        location.reload();
+    }, 800); // pequeño retraso para asegurar que borra antes de recargar
 });
 
 
 
 
 
-// Recalcular esfuerzos cuando cambia el área
+
+// ======== ELIMINAR DATOS AL GENERAR PDF ========
+
+ 
+
+
+        
+        
+        
+        
+        
+        
+// Recalcular esfuerzos cuando cambia el área       
 /*document.getElementById('areaInput').addEventListener('input', function () {
     const nuevaArea = parseFloat(this.value);
     const filas = document.querySelectorAll('#tablaDatos tbody tr');
