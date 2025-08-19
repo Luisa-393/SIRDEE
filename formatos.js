@@ -236,15 +236,15 @@ document.getElementById('btnGenerarPDF').addEventListener('click', async functio
 
 // ======== ELIMINAR DATOS AL GENERAR PDF ========
 
- 
 
 
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
 // Recalcular esfuerzos cuando cambia el área       
 /*document.getElementById('areaInput').addEventListener('input', function () {
     const nuevaArea = parseFloat(this.value);

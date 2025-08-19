@@ -138,8 +138,11 @@ function validarDatosParaPDF() {
     return true; // Todo correcto
 }
 
+
+
+
 // ===== Generar PDF =====
-document.getElementById('btnGenerarPDF').addEventListener('click', function () {
+document.getElementById('btnGenerarPDF').addEventListener('click', async function () {
     if (!validarDatosParaPDF()) return; // Si falla validación, no sigue
 
     const contenido = document.getElementById('contenidoParaPDF');
@@ -152,10 +155,11 @@ document.getElementById('btnGenerarPDF').addEventListener('click', function () {
     const canvasClon = contenidoClonado.querySelector('#graficaDeformaciones');
     const img = document.createElement('img');
     img.src = imgData;
-    img.style.width = '100%'; // Tamaño grafica
+    img.style.width = '100%';
     img.style.height = 'auto';
     canvasClon.replaceWith(img);
 
+    // Ocultar botones en el clon
     ['#btnGenerarPDF', '#btnAutoCarga'].forEach(id => {
         const boton = contenidoClonado.querySelector(id);
         if (boton) boton.style.display = 'none';
@@ -177,22 +181,51 @@ document.getElementById('btnGenerarPDF').addEventListener('click', function () {
             windowWidth: document.body.scrollWidth,
             windowHeight: document.body.scrollHeight
         },
-
         jsPDF: {
             unit: 'mm',
-            format: 'letter', //tamaño carta 
+            format: 'letter',
             orientation: 'portrait'
         },
         pagebreak: {
             mode: ['css', 'legacy'],
             before: '.salto-pagina',
-            avoid: '#tablaDatos tr' // Evita que corte una fila en dos páginas
-
+            avoid: '#tablaDatos tr'
         }
     };
-    //generar pdf
-    html2pdf().set(opciones).from(contenidoClonado).save();
+
+    // Generar PDF
+    await html2pdf().set(opciones).from(contenidoClonado).save();
+
+    // 🔹 ELIMINAR DATOS DESPUÉS DE GENERAR EL PDF
+
+    // 1. Vaciar tabla de mediciones en el HTML
+    document.querySelector('#tablaDatos tbody').innerHTML = "";
+
+    // 2. Eliminar del LocalStorage
+    localStorage.removeItem('datosDeformaciones');
+
+    // 3. Eliminar registros en Supabase
+    try {
+        await supabase.from('Weight_carga').delete().neq('id', 0);
+        await supabase.from('Sensor_LDVT').delete().neq('id', 0);
+        console.log("Datos eliminados correctamente en Supabase");
+    } catch (error) {
+        console.error("Error al eliminar en Supabase:", error);
+    }
+
+    // 4. Limpiar campo Responsable del ensayo
+    const responsableInput = document.querySelector('input[value="Ing. Yazmin Osiris Linares González"]');
+    if (responsableInput) responsableInput.value = "";
+
+    // 5. Recargar la página
+    setTimeout(() => {
+        location.reload();
+    }, 800);
 });
+
+
+
+
 
 // ===== Cargar datos al iniciar =====
 document.addEventListener('DOMContentLoaded', async function () {
@@ -224,7 +257,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         `;
         tbody.appendChild(fila);
 
-        
+
     });
 
     // ======== LECTURA AUTOMÁTICA DE CARGAS KG DESDE SUPABASE ========
