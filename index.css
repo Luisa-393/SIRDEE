@@ -12,6 +12,11 @@ h2 {
   font-weight: bold;
 }
 
+.logo1 {
+  height: 90px; 
+  object-fit: contain;
+}
+
 .table th {
   background-color: #002e6d !important;
   color: white;
@@ -28,7 +33,7 @@ h2 {
 .titulo-deformaciones {
   text-align: center;
   color: #003366;         /* Azul marino más oscuro */
-  font-size: 1.2rem;       /* Más pequeño que el h2 original */
+  font-size: 1.1rem;       /* Más pequeño que el h2 original */
   font-weight: bold;
   font-family: 'Segoe UI', sans-serif;
 }

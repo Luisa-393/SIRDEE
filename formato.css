@@ -8,6 +8,12 @@
   vertical-align: middle !important;
 }
 
+.logo1 {
+  height: 90px;
+  object-fit: contain;
+  margin-top: 10px; /* Ajusta el valor según lo necesites */
+}
+
 /* Asegura que los TD de la tabla de datos generales sean blancos */
 .tabla-datos-generales td,
 .tabla-datos-generales input {
@@ -299,8 +305,8 @@ body {
 .tabla-datos-generales input[type="number"] {
    
     padding: 1px 2px !important;  /* menos espacio interno */
-    height: 20px !important;      /* más bajas */
-    max-width: 85px !important;   /* ancho máximo más reducido */
+    height: 18px !important;      /* más bajas */
+    max-width: 72px !important;   /* ancho máximo más reducido */
 }
 
 

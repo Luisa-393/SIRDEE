@@ -1,4 +1,4 @@
-// FUNCIÓN PARA CALCULAR PROMEDIO EN MM
+// FUNCIÓN PARA CALCULAR PROMEDIO EN MM 
 function calcularLongitudPromedioMM() {
     const input1 = document.getElementById('longitud1');
     const input2 = document.getElementById('longitud2');
@@ -33,13 +33,109 @@ function calcularLongitudPromedioMM() {
 }
 
 
+// ===== Calcular Promedio Longitud en mm para PILAS =====
+function calcularPromedioLongitudMM() {
+    const longitudes = [
+        parseFloat(document.getElementById('long1Lado1')?.value),
+        parseFloat(document.getElementById('long1Lado2')?.value),
+        parseFloat(document.getElementById('long2Lado1')?.value),
+        parseFloat(document.getElementById('long2Lado2')?.value),
+        parseFloat(document.getElementById('long3Lado1')?.value),
+        parseFloat(document.getElementById('long3Lado2')?.value)
+    ];
+
+    // Filtrar solo válidos
+    const validos = longitudes.filter(v => !isNaN(v));
+
+    if (validos.length === 6) {
+        const promedioCM = validos.reduce((a, b) => a + b, 0) / 6;
+        const promedioMM = promedioCM * 10;
+        document.getElementById('promedioLongitud').value = promedioMM.toFixed(2);
+
+        // Recalcular deformación unitaria
+        const filas = document.querySelectorAll('#tablaDatos tbody tr');
+        filas.forEach(fila => {
+            const deformacionPromedio = parseFloat(fila.children[1].innerText.trim());
+            fila.children[2].innerText = (!isNaN(deformacionPromedio) && promedioMM !== 0)
+                ? (deformacionPromedio / promedioMM).toFixed(6)
+                : '';
+        });
+
+        actualizarGrafica();
+    } else {
+        const promedio = document.getElementById('promedioLongitud');
+        if (promedio) promedio.value = '';
+    }
+}
+
+
+// CILINDROS FUNCIÓN PARA CALCULAR ÁREA AUTOMÁTICA DESDE DIÁMETRO
+function calcularArea() {
+    const diametro = parseFloat(document.getElementById('diametro').value);
+    const areaCelda = document.getElementById('areaCelda');
+
+    if (!isNaN(diametro) && diametro > 0) {
+        const radio = diametro / 2;
+        const area = Math.PI * Math.pow(radio, 2);
+        areaCelda.textContent = area.toFixed(2);
+
+        // Recalcular esfuerzo en la tabla solo si hay área
+        const filas = document.querySelectorAll('#tablaDatos tbody tr');
+        filas.forEach(fila => {
+            const carga = parseFloat(fila.querySelector('.carga')?.innerText.trim());
+            const celdaEsfuerzo = fila.querySelector('.esfuerzo');
+
+            if (!isNaN(carga)) {
+                const esfuerzo = (carga / area).toFixed(2);
+                celdaEsfuerzo.innerText = esfuerzo;
+            } else {
+                celdaEsfuerzo.innerText = '';
+            }
+        });
+
+        actualizarGrafica();
+    } else {
+        //si no hay diámetro, limpiar área y esfuerzos
+        areaCelda.textContent = '';
+
+        const filas = document.querySelectorAll('#tablaDatos tbody tr');
+        filas.forEach(fila => {
+            const celdaEsfuerzo = fila.querySelector('.esfuerzo');
+            if (celdaEsfuerzo) celdaEsfuerzo.innerText = '';
+        });
+
+        actualizarGrafica();
+    }
+}
+
+
+
 // ======== Cargar datos al iniciar  ========
 document.addEventListener('DOMContentLoaded', async function () {
+
+    // ======== Establecer fecha actual en "Fecha de ruptura" ========
+    const hoy = new Date();
+    const fechaActual = hoy.getFullYear() + "-" +
+        String(hoy.getMonth() + 1).padStart(2, "0") + "-" +
+        String(hoy.getDate()).padStart(2, "0");
+
+
+    const inputsFecha = document.querySelectorAll('input[type="date"]');
+    inputsFecha.forEach(input => {
+        const th = input.closest('td')?.previousElementSibling;
+        if (th && th.textContent.trim().toLowerCase().includes('fecha de ruptura')) {
+            input.value = fechaActual;
+        }
+    });
+
     calcularLongitudPromedioMM();
 
     const datos = JSON.parse(localStorage.getItem('datosDeformaciones')) || [];
     const tbody = document.querySelector('#tablaDatos tbody');
-    const longitudControl = parseFloat(document.getElementById('longitudPromedio').value);
+    //const longitudControl = parseFloat(document.getElementById('longitudPromedio').value);
+    const longitudInput = document.getElementById('longitudPromedio') || document.getElementById('promedioLongitud');
+    const longitudControl = longitudInput ? parseFloat(longitudInput.value) : null;
+
 
     //crear filas con deformaciones
     datos.forEach(dato => {
@@ -51,16 +147,14 @@ document.addEventListener('DOMContentLoaded', async function () {
             <td>${dato.tiempo}</td>
             <td>${dato.promedio}</td>
             <td class="deformacion">${deformacionUnitaria}</td>
-            <td contenteditable="true" class="editable carga"></td> 
+            <td class="carga"></td> 
             <td class="esfuerzo"></td>
         `;
         tbody.appendChild(fila);
     });
 
 
-
-
-    // ======== LECTURA AUTOMÁTICA DE CARGAS KG DESDE SUPABASE ========
+    // ======== LECTURA AUTOMÁTICA DE CARGA KG DESDE SUPABASE ========
     const filas = document.querySelectorAll('#tablaDatos tbody tr');
 
     for (let i = 0; i < filas.length; i++) {
@@ -87,29 +181,75 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
 
-    // ======== CALCULAR ESFUERZO AL INGRESAR ÁREA ========
-    document.getElementById('areaInput').addEventListener('input', function () {
-        const nuevaArea = parseFloat(this.value);
-        filas.forEach(fila => {
-            const carga = parseFloat(fila.querySelector('.carga')?.innerText.trim());
-            const celdaEsfuerzo = fila.querySelector('.esfuerzo');
+    // ======== CALCULAR ESFUERZO AL INGRESAR ÁREA PARA MURETES Y PILAS========
+    const areaInput = document.getElementById('areaInput'); // <-- solo existe en muretes y pilas
+    if (areaInput) {
+        areaInput.addEventListener('input', function () {
+            const nuevaArea = parseFloat(this.value);
+            const filas = document.querySelectorAll('#tablaDatos tbody tr');
+            filas.forEach(fila => {
+                const carga = parseFloat(fila.querySelector('.carga')?.innerText.trim());
+                const celdaEsfuerzo = fila.querySelector('.esfuerzo');
 
-            if (!isNaN(carga) && !isNaN(nuevaArea) && nuevaArea !== 0) {
-                const esfuerzo = (carga / nuevaArea).toFixed(2);
-                celdaEsfuerzo.innerText = esfuerzo;
-            } else {
-                celdaEsfuerzo.innerText = '';
-            }
+                if (!isNaN(carga) && !isNaN(nuevaArea) && nuevaArea !== 0) {
+                    const esfuerzo = (carga / nuevaArea).toFixed(2);
+                    celdaEsfuerzo.innerText = esfuerzo;
+                } else {
+                    celdaEsfuerzo.innerText = '';
+                }
+            });
+
+            actualizarGrafica();
         });
+    }
 
-        actualizarGrafica();
-    });
+    // Detectar si estoy en la página de pilas (IDs exclusivos de pilas)
+    if (document.getElementById('long1Lado1')) {
+        ['long1Lado1', 'long1Lado2', 'long2Lado1', 'long2Lado2', 'long3Lado1', 'long3Lado2']
+            .forEach(id => {
+                document.getElementById(id).addEventListener('input', calcularPromedioLongitudMM);
+            });
+
+        // Calcular al inicio también
+        calcularPromedioLongitudMM();
+    }
 });
 
 
-// Escuchar cambios de longitud
-document.getElementById('longitud1').addEventListener('input', calcularLongitudPromedioMM);
-document.getElementById('longitud2').addEventListener('input', calcularLongitudPromedioMM);
+//actualizar esfuerzo al editar la tabla
+document.addEventListener('input', function (e) {
+    if (e.target.classList.contains('editable')) {
+        const fila = e.target.closest('tr');
+        const deformacion = parseFloat(fila.querySelector('.deformacion').innerText.trim());
+        const carga = parseFloat(fila.querySelector('.carga').innerText.trim());
+        const celdaEsfuerzo = fila.querySelector('.esfuerzo');
+
+        const area = parseFloat(document.getElementById('areaInput').value);
+
+        if (!isNaN(carga) && !isNaN(area)) {
+            const esfuerzo = (carga / area).toFixed(2);
+            celdaEsfuerzo.innerText = esfuerzo;
+        } else {
+            celdaEsfuerzo.innerText = '';
+        }
+        actualizarGrafica();
+    }
+});
+
+
+// Escuchar cambios de longitud para cilindros y muretes
+const inputLong1 = document.getElementById('longitud1');
+if (inputLong1) inputLong1.addEventListener('input', calcularLongitudPromedioMM);
+
+const inputLong2 = document.getElementById('longitud2');
+if (inputLong2) inputLong2.addEventListener('input', calcularLongitudPromedioMM);
+
+
+// Escuchar cambios en diámetro (solo si existe, o sea en cilindros.html)
+const inputDiametro = document.getElementById('diametro');
+if (inputDiametro) {
+    inputDiametro.addEventListener('input', calcularArea);
+}
 
 
 // ===== FUNCIÓN DE VALIDACIÓN GENERAR PDF=====
@@ -142,7 +282,6 @@ function validarDatosParaPDF() {
 
     return true; // Todo correcto
 }
-
 
 
 // Botón generar PDF
@@ -198,7 +337,7 @@ document.getElementById('btnGenerarPDF').addEventListener('click', async functio
     // Generar PDF y luego eliminar datos
     await html2pdf().set(opciones).from(contenidoClonado).save();
 
-    // 🔹 ELIMINAR DATOS DESPUÉS DE GENERAR EL PDF
+    // ELIMINAR DATOS DESPUÉS DE GENERAR EL PDF
 
     // 1. Vaciar tabla en el HTML
     document.querySelector('#tablaDatos tbody').innerHTML = "";
@@ -210,8 +349,6 @@ document.getElementById('btnGenerarPDF').addEventListener('click', async functio
     try {
         // Borrar todos los registros de Weight_carga
         await supabase.from('Weight_carga').delete();
-
-        //await supabase.from('Weight_carga').delete().neq('id', 0); // elimina todos
 
         // Borrar todos los registros de Sensor_LDVT
         await supabase.from('Sensor_LDVT').delete().neq('id', 0);
@@ -232,61 +369,6 @@ document.getElementById('btnGenerarPDF').addEventListener('click', async functio
 });
 
 
-
-
-
-
-// ======== ELIMINAR DATOS AL GENERAR PDF ========
-
-
-
-
-
-
-
-
-
-
-// Recalcular esfuerzos cuando cambia el área       
-/*document.getElementById('areaInput').addEventListener('input', function () {
-    const nuevaArea = parseFloat(this.value);
-    const filas = document.querySelectorAll('#tablaDatos tbody tr');
-
-    filas.forEach(fila => {
-        const carga = parseFloat(fila.querySelector('.carga')?.innerText.trim());
-        const celdaEsfuerzo = fila.querySelector('.esfuerzo');
-
-        if (!isNaN(carga) && !isNaN(nuevaArea) && nuevaArea !== 0) {
-            const esfuerzo = (carga / nuevaArea).toFixed(2);
-            celdaEsfuerzo.innerText = esfuerzo;
-        } else {
-            celdaEsfuerzo.innerText = '';
-        }
-    });
-
-    actualizarGrafica();
-});*/
-
-
-//actualizar esfuerzo al editar la tabla
-document.addEventListener('input', function (e) {
-    if (e.target.classList.contains('editable')) {
-        const fila = e.target.closest('tr');
-        const deformacion = parseFloat(fila.querySelector('.deformacion').innerText.trim());
-        const carga = parseFloat(fila.querySelector('.carga').innerText.trim());
-        const celdaEsfuerzo = fila.querySelector('.esfuerzo');
-
-        const area = parseFloat(document.getElementById('areaInput').value);
-
-        if (!isNaN(carga) && !isNaN(area)) {
-            const esfuerzo = (carga / area).toFixed(2);
-            celdaEsfuerzo.innerText = esfuerzo;
-        } else {
-            celdaEsfuerzo.innerText = '';
-        }
-        actualizarGrafica();
-    }
-});
 
 //función para actualizar la gráfica 
 function actualizarGrafica() {
@@ -356,62 +438,3 @@ function actualizarGrafica() {
         }
     });
 }
-
-// Mostrar promedios
-/*if (esfuerzos.length > 0 && deformaciones.length > 0) {
-    const promEsfuerzo = (esfuerzos.reduce((a, b) => a + b, 0) / esfuerzos.length).toFixed(2);
-    const promDeformacion = (deformaciones.reduce((a, b) => a + b, 0) / deformaciones.length).toFixed(4);
-
-    document.getElementById('promedios').innerHTML = `
-        <h5 class="fw-bold">Promedios</h5>
-        <p><strong>Prom σ:</strong> ${promEsfuerzo}</p>
-        <p><strong>Prom ε:</strong> ${promDeformacion}</p>
-    `;
-} else {
-    document.getElementById('promedios').innerHTML = '';
-}*/
-
-
-
-
-
-
-
-// ===== BOTÓN PARA LECTURA AUTOMÁTICA DE CARGA =====
-/*document.getElementById('btnAutoCarga').addEventListener('click', function () {
-    const filas = document.querySelectorAll('#tablaDatos tbody tr');
-    const area = parseFloat(document.getElementById('areaInput').value);
-
-    if (isNaN(area) || area === 0) {
-        alert("Primero ingresa el área (cm²) para calcular el esfuerzo.");
-        return;
-    }
-
-    let cargaActual = 0; // empieza desde 0
-    let incremento = 5; // kg que aumentará cada paso
-    let i = 0;
-
-    const intervalo = setInterval(() => {
-        if (i >= filas.length) {
-            clearInterval(intervalo); // detener cuando no haya más filas
-            return;
-        }
-
-        const fila = filas[i];
-        const celdaCarga = fila.querySelector('.carga');
-        const celdaEsfuerzo = fila.querySelector('.esfuerzo');
-
-        cargaActual += incremento; // aumentar carga
-        celdaCarga.innerText = cargaActual.toFixed(2); // mostrar carga con 2 decimales
-
-        const esfuerzo = (cargaActual / area).toFixed(2);
-        celdaEsfuerzo.innerText = esfuerzo;
-
-        actualizarGrafica(); // refrescar gráfico y promedios
-
-        i++;
-    }, 500); // medio segundo entre lecturas
-});*/
-
-
-
