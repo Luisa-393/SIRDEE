@@ -29,7 +29,15 @@ function calcularLongitudPromedioMM() {
         actualizarGrafica(); //  actualizar gráfica si ε cambia
     } else {
         promedioInput.value = '';
+
+        // Limpiar deformación unitaria si no hay promedio válido
+        const filas = document.querySelectorAll('#tablaDatos tbody tr');
+        filas.forEach(fila => {
+            fila.children[2].innerText = '';
+        });
     }
+
+    actualizarGrafica();
 }
 
 
@@ -47,13 +55,15 @@ function calcularPromedioLongitudMM() {
     // Filtrar solo válidos
     const validos = longitudes.filter(v => !isNaN(v));
 
+    const promedioInput = document.getElementById('promedioLongitud');
+    const filas = document.querySelectorAll('#tablaDatos tbody tr');
+
     if (validos.length === 6) {
         const promedioCM = validos.reduce((a, b) => a + b, 0) / 6;
         const promedioMM = promedioCM * 10;
-        document.getElementById('promedioLongitud').value = promedioMM.toFixed(2);
+        promedioInput.value = promedioMM.toFixed(2);
 
-        // Recalcular deformación unitaria
-        const filas = document.querySelectorAll('#tablaDatos tbody tr');
+        // Calcular deformación unitaria
         filas.forEach(fila => {
             const deformacionPromedio = parseFloat(fila.children[1].innerText.trim());
             fila.children[2].innerText = (!isNaN(deformacionPromedio) && promedioMM !== 0)
@@ -61,11 +71,15 @@ function calcularPromedioLongitudMM() {
                 : '';
         });
 
-        actualizarGrafica();
     } else {
-        const promedio = document.getElementById('promedioLongitud');
-        if (promedio) promedio.value = '';
+        promedioInput.value = '';
+        // Limpiar la columna de Deformación Unitaria si no hay promedio válido
+        filas.forEach(fila => {
+            fila.children[2].innerText = '';
+        });
     }
+
+    actualizarGrafica();
 }
 
 
@@ -132,15 +146,24 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     const datos = JSON.parse(localStorage.getItem('datosDeformaciones')) || [];
     const tbody = document.querySelector('#tablaDatos tbody');
+
     //const longitudControl = parseFloat(document.getElementById('longitudPromedio').value);
     const longitudInput = document.getElementById('longitudPromedio') || document.getElementById('promedioLongitud');
     const longitudControl = longitudInput ? parseFloat(longitudInput.value) : null;
 
+    // Si no hay promedio al inicio, limpiar deformación unitaria
+    if (!longitudControl || isNaN(longitudControl) || longitudControl <= 0) {
+        document.querySelectorAll('#tablaDatos tbody tr').forEach(fila => {
+            fila.children[2].innerText = '';
+        });
+    }
 
     //crear filas con deformaciones
     datos.forEach(dato => {
         const promedio = parseFloat(dato.promedio);
-        const deformacionUnitaria = longitudControl ? (promedio / longitudControl).toFixed(6) : '';
+        const deformacionUnitaria = (!isNaN(longitudControl) && longitudControl > 0)
+            ? (promedio / longitudControl).toFixed(6)
+            : '';
 
         const fila = document.createElement('tr');
         fila.innerHTML = `

@@ -11,7 +11,8 @@
 .logo1 {
   height: 90px;
   object-fit: contain;
-  margin-top: 10px; /* Ajusta el valor según lo necesites */
+  margin-top: 5px;
+  /* Ajusta el valor según lo necesites */
 }
 
 /* Asegura que los TD de la tabla de datos generales sean blancos */
@@ -165,6 +166,7 @@ h2 {
 
 /* Ocultar botones al imprimir o exportar */
 @media print {
+
   #btnGenerarPDF,
   #btnAutoCarga {
     display: none;
@@ -190,7 +192,7 @@ body {
 /* Estilo reducido para la tabla de mediciones */
 #tablaDatos th,
 #tablaDatos td {
-  font-size: 0.75rem;
+  font-size: 0.70rem;
   /* letra más pequeña */
   padding: 2px 5px;
   /* menos espacio interno */
@@ -202,6 +204,20 @@ body {
   font-size: 0.75rem;
   padding: 2px 4px;
   height: auto;
+}
+
+@media (max-width: 768px) {
+  #tablaDatos thead th {
+    font-size: 0.60rem !important;
+    padding: 2px 3px;
+  }
+}
+
+@media (max-width: 768px) {
+  #tablaDatos td {
+    font-size: 0.65rem !important;
+    padding: 1px 2px;
+  }
 }
 
 /* Reducir tamaño general de datos en la tabla de datos generales */
@@ -271,31 +287,34 @@ body {
 
 /* Campo de responsable más ancho muretes*/
 .tabla-datos-generales td[colspan="2"] input[type="text"] {
-    max-width: none !important;
-    width: 100% !important;
+  max-width: none !important;
+  width: 100% !important;
 }
 
 /* Campo de responsable más ancho pilas*/
-.tabla-datos-generales td[colspan="3"] input[type="text"], input[type="number"] {
-    max-width: none !important;
-    width: 100% !important;
+.tabla-datos-generales td[colspan="3"] input[type="text"],
+input[type="number"] {
+  max-width: none !important;
+  width: 100% !important;
 }
 
 
 .tabla-datos-generales th,
 .tabla-datos-generales td {
-    font-size: 12px; /* más pequeño que en pantalla, caso para mueretes.html*/
-    white-space: nowrap; /* evita cortes en saltos de línea */
+  font-size: 12px;
+  /* más pequeño que en pantalla, caso para mueretes.html*/
+  white-space: nowrap;
+  /* evita cortes en saltos de línea */
 }
 
 .tabla-datos-generales th {
-    word-break: break-word;
-    white-space: normal;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .tabla-datos-generales th,
 .tabla-datos-generales td {
-    padding: 1px 3px;
+  padding: 1px 3px;
 }
 
 
@@ -303,19 +322,61 @@ body {
 .tabla-datos-generales input[type="text"],
 .tabla-datos-generales input[type="date"],
 .tabla-datos-generales input[type="number"] {
-   
-    padding: 1px 2px !important;  /* menos espacio interno */
-    height: 18px !important;      /* más bajas */
-    max-width: 72px !important;   /* ancho máximo más reducido */
+
+  padding: 1px 2px !important;
+  /* menos espacio interno */
+  height: 18px !important;
+  /* más bajas */
+  max-width: 72px !important;
+  /* ancho máximo más reducido */
 }
 
 
 /* Campo de longitud promedio más ancho en pilas */
 #promedioLongitud {
-    max-width: none !important;
-    width: 100% !important;
+  max-width: none !important;
+  width: 100% !important;
 }
 
 #tablaDatos tr {
-  page-break-inside: avoid;  /* evita que una fila se corte en dos páginas */
+  page-break-inside: avoid;
+  /* evita que una fila se corte en dos páginas */
+}
+
+
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 768px) {
+  .tabla-datos-generales th,
+  .tabla-datos-generales td {
+    font-size: 0.6rem !important;
+    padding: 2px 3px !important;
+    white-space: nowrap;
+  }
+  
+  .tabla-datos-generales input {
+    font-size: 0.6rem !important;
+    padding: 2px 3px !important;
+    width: 65px !important;
+  }
+}
+
+/* Ajustes para pantallas muy pequeñas */
+@media (max-width: 768px) {
+  h2 {
+    font-size: 0.7rem; /* Más pequeño para pantallas medianas */
+    padding: 1px;
+  }
+}
+
+@media (max-width: 480px) {
+  h2 {
+    font-size: 0.6rem; /* Aún más pequeño en móviles pequeños */
+    padding: 1px;
+  }
 }
