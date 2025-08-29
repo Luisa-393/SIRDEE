@@ -12,7 +12,6 @@
   height: 90px;
   object-fit: contain;
   margin-top: 5px;
-  /* Ajusta el valor según lo necesites */
 }
 
 /* Asegura que los TD de la tabla de datos generales sean blancos */
@@ -120,7 +119,7 @@ h2 {
 /* tamaño del texto en los input type="number"  de la tabla datos generales*/
 .tabla-datos-generales input[type="number"] {
   font-size: 0.8rem;
-  padding: 2px 4px;
+  padding: 2px 3px;
   height: auto;
 }
 
@@ -327,7 +326,7 @@ input[type="number"] {
   /* menos espacio interno */
   height: 18px !important;
   /* más bajas */
-  max-width: 72px !important;
+  max-width: 73px !important;
   /* ancho máximo más reducido */
 }
 

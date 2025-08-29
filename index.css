@@ -13,8 +13,27 @@ h2 {
 }
 
 .logo1 {
-  height: 90px; 
+  height: 90px;
   object-fit: contain;
+  margin-top: -7px;
+}
+
+/* --- Ajustes en móviles --- */
+@media (max-width: 576px) {
+  .row.g-0.mb-1 {
+    display: flex;
+    align-items: flex-start;   /* fuerza alineación arriba */
+  }
+
+  .col-3, .col-9 {
+    display: flex;
+    align-items: flex-start;   /* alinear los logos arriba */
+  }
+
+  .logo1 {
+    height: 70px;   /* más pequeño en móvil para que no empuje demasiado */
+    margin-top: 0;  /* resetea el margen negativo */
+  }
 }
 
 .table th {

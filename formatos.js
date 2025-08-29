@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const longitudInput = document.getElementById('longitudPromedio') || document.getElementById('promedioLongitud');
     const longitudControl = longitudInput ? parseFloat(longitudInput.value) : null;
 
-    // Si no hay promedio al inicio, limpiar deformación unitaria
+    // Si no hay promedio al inicio, limpiar deformación unitaria para pilas
     if (!longitudControl || isNaN(longitudControl) || longitudControl <= 0) {
         document.querySelectorAll('#tablaDatos tbody tr').forEach(fila => {
             fila.children[2].innerText = '';
