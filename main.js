@@ -1,3 +1,9 @@
+// === FUNCIÓN PARA TRUNCAR A 4 DECIMALES (NUMÉRICO REAL) ===
+function truncar4Decimales(num) {
+    if (num == null || isNaN(num)) return '';
+    return (Math.trunc(num * 10000) / 10000).toFixed(4);
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     // ======= CONFIGURAR TIEMPO Y GENERAR FILAS =========
     const modalTiempoEl = document.getElementById('modalTiempo');
@@ -10,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 100); // Espera 100 ms para asegurar que el DOM y aria-hidden se actualicen
     });
 
-    
+
     //generar datos al enviar formulario
     document.getElementById('formTiempo').addEventListener('submit', async function (event) {
         event.preventDefault();
@@ -27,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         try {
-            // 1️⃣ Obtener el timestamp del primer registro para usar como referencia
+            // 1️ Obtener el timestamp del primer registro para usar como referencia
             const { data: primerRegistro, error: errPrimer } = await supabase
                 .from('Sensor_LDVT')
                 .select('time')
@@ -40,9 +46,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            const fechaInicio = new Date(primerRegistro[0].time);
+            // Tomamos el primer registro real de la base de datos
+            const fechaPrimerRegistro = new Date(primerRegistro[0].time);
 
-            // 2️⃣ Traer todos los registros entre el inicio y fin relativo en segundos
+            // Ajustamos fechaInicio dependiendo del valor de inicio
+            let fechaInicio;
+            if (inicio === 1) {
+                // Si el usuario elige inicio = 1, no desplazamos, usamos el primer dato
+                fechaInicio = fechaPrimerRegistro;
+            } else {
+                // Si elige inicio > 1, calculamos normalmente
+                fechaInicio = new Date(fechaPrimerRegistro.getTime() + (inicio - 1) * 1000);
+            }
+
+
+            // 2️ Traer todos los registros entre el inicio y fin relativo en segundos
             // Calculamos los timestamps absolutos
             const fechaFin = new Date(fechaInicio.getTime() + fin * 1000);
 
@@ -64,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            // 3️⃣ Filtrar datos según el intervalo de salto
+            // 3️ Filtrar datos según el intervalo de salto
             for (let t = inicio; t <= fin; t += salto) {
                 // Buscar el registro más cercano al tiempo t
                 const lectura = data.reduce((prev, curr) => {
@@ -75,14 +93,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const Ldvt1 = parseFloat(lectura.Ldvt1);
                 const Ldvt2 = parseFloat(lectura.Ldvt2);
-                const promedio = ((Ldvt1 + Ldvt2) / 2).toFixed(4);
+                const promedio = ((Ldvt1 + Ldvt2) / 2);
 
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
                 <td>${t}</td>
-                <td contenteditable="true" class="editable lvdt1">${Ldvt1.toFixed(4)}</td>
-                <td contenteditable="true" class="editable lvdt2">${Ldvt2.toFixed(4)}</td>
-                <td class="promedio">${promedio}</td>
+                <td contenteditable="true" class="editable lvdt1">${truncar4Decimales(lectura.Ldvt1)}</td>
+                <td contenteditable="true" class="editable lvdt2">${truncar4Decimales(lectura.Ldvt2)}</td>
+                <td class="promedio">${truncar4Decimales(promedio)}</td>
             `;
                 tbody.appendChild(fila);
             }
@@ -123,8 +141,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const val2 = parseFloat(celdaLVDT2.innerText.trim());
 
             if (!isNaN(val1) && !isNaN(val2)) {
-                const promedio = ((val1 + val2) / 2).toFixed(4); //4 decimales
-                celdaPromedio.innerText = promedio;
+                const promedio = ((val1 + val2) / 2);
+                celdaPromedio.innerText = truncar4Decimales(promedio);
             } else {
                 celdaPromedio.innerText = '';
             }
@@ -148,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 tiempos.push(tiempo);
                 deformaciones1.push(d1);
                 deformaciones2.push(d2);
-                deformacionesPromedio.push(((d1 + d2) / 2).toFixed(4));
+                deformacionesPromedio.push(parseFloat(truncar4Decimales((d1 + d2) / 2)));
             }
         });
 
@@ -192,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                     label += ': ';
                                 }
                                 if (context.parsed.y != null) {
-                                    label += context.parsed.y.toFixed(4); // 🔹 Fuerza 4 decimales
+                                    label += truncar4Decimales(context.parsed.y);
                                 }
                                 return label;
                             }

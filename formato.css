@@ -172,8 +172,6 @@ h2 {
   }
 }
 
-
-
 /* Quitar bordes y sombras en el PDF */
 #contenidoParaPDF {
   box-shadow: none !important;

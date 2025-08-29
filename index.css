@@ -8,31 +8,47 @@ body {
 h2 {
   text-align: center;
   color: #002e6d;
-  font-size: 0.8rem; 
+  font-size: 0.8rem;
   font-weight: bold;
 }
 
 .logo1 {
   height: 90px;
   object-fit: contain;
-  margin-top: -7px;
+  margin-top: -6px;
 }
+
 
 /* --- Ajustes en móviles --- */
 @media (max-width: 576px) {
-  .row.g-0.mb-1 {
-    display: flex;
-    align-items: flex-start;   /* fuerza alineación arriba */
+
+  .titulo-deformaciones {
+    font-size: 0.9rem !important;
   }
 
-  .col-3, .col-9 {
+  /* Reducir tamaño de celdas en móvil */
+  #tablaDatos thead th {
+    font-size: 0.60rem !important;
+    padding: 2px 3px;
+  }
+
+  .row.g-0.mb-1 {
     display: flex;
-    align-items: flex-start;   /* alinear los logos arriba */
+    align-items: flex-start;
+    /* fuerza alineación arriba */
+  }
+
+  .col-3,
+  .col-9 {
+    display: flex;
+    align-items: flex-start;
+    /* alinear los logos arriba */
   }
 
   .logo1 {
-    height: 70px;   /* más pequeño en móvil para que no empuje demasiado */
-    margin-top: 0;  /* resetea el margen negativo */
+    height: 70px;
+    /* más pequeño en móvil para que no empuje demasiado */
+    margin-top: -8px;
   }
 }
 
@@ -51,8 +67,10 @@ h2 {
 
 .titulo-deformaciones {
   text-align: center;
-  color: #003366;         /* Azul marino más oscuro */
-  font-size: 1.1rem;       /* Más pequeño que el h2 original */
+  color: #003366;
+  /* Azul marino más oscuro */
+  font-size: 1.1rem;
+  /* Más pequeño que el h2 original */
   font-weight: bold;
   font-family: 'Segoe UI', sans-serif;
 }
@@ -60,25 +78,32 @@ h2 {
 /* Reducir tamaño de la tabla de mediciones */
 #tablaDatos th,
 #tablaDatos td {
-    font-size: 0.74rem !important;   /* texto más pequeño */
-    padding: 2px 4px !important;    /* menos espacio interno */
-    line-height: 1.1;               /* más compacto */
+  font-size: 0.74rem !important;
+  /* texto más pequeño */
+  padding: 2px 4px !important;
+  /* menos espacio interno */
+  line-height: 1.1;
+  /* más compacto */
 }
 
 #tablaDatos input {
-    font-size: 1.5rem !important;   /* texto pequeño en campos editables */
-    padding: 2px 4px !important;
-    height: auto !important;        /* evita que se estiren */
+  font-size: 1.5rem !important;
+  /* texto pequeño en campos editables */
+  padding: 2px 4px !important;
+  height: auto !important;
+  /* evita que se estiren */
 }
 
 
 /* Reducir tamaño del texto en todos los botones */
 .btn {
-    font-size: 0.75rem !important; /* más pequeño que el tamaño por defecto */
-    padding: 4px 8px !important;   /* menos espacio interno para que se vean más compactos */
+  font-size: 0.75rem !important;
+  /* más pequeño que el tamaño por defecto */
+  padding: 4px 8px !important;
+  /* menos espacio interno para que se vean más compactos */
 }
 
 /* Opcional: hacer que el texto del dropdown sea también más pequeño */
 .dropdown-menu .dropdown-item {
-    font-size: 0.75rem !important;
+  font-size: 0.75rem !important;
 }
