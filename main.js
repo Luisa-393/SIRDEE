@@ -84,12 +84,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // 3️ Filtrar datos según el intervalo de salto
             for (let t = inicio; t <= fin; t += salto) {
-                // Buscar el registro más cercano al tiempo t
-                const lectura = data.reduce((prev, curr) => {
-                    const segCurr = (new Date(curr.time) - fechaInicio) / 1000;
-                    const segPrev = (new Date(prev.time) - fechaInicio) / 1000;
-                    return Math.abs(segCurr - t) < Math.abs(segPrev - t) ? curr : prev;
-                });
+                let idRegistro = t; // si t=1 → id=1, si t=6 → id=6, etc.
+
+                // Buscar registro con ese id en Supabase
+                const lectura = data[idRegistro - 1]; // -1 porque array empieza en índice 0
+
+                if (!lectura) continue; // si no existe, saltar
 
                 const Ldvt1 = parseFloat(lectura.Ldvt1);
                 const Ldvt2 = parseFloat(lectura.Ldvt2);
@@ -115,10 +115,6 @@ document.addEventListener('DOMContentLoaded', function () {
             alert('Ocurrió un error al procesar los datos.');
         }
     });
-
-
-
-
 
     // ======= VALIDAR ENTRADA Y CALCULAR PROMEDIO ========
     document.addEventListener('input', function (e) {

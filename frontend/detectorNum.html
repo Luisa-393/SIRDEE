@@ -10,7 +10,7 @@
 
 <body>
   <div class="container py-4">
-    <h1 class="text-center mb-4">Detección de Dígitos en Video</h1>
+    <h3 class="text-center mb-4">Detección de Dígitos en Video</h3>
 
     <div class="card shadow-sm">
       <div class="card-body">
@@ -43,7 +43,7 @@
 
     <div class="card mt-4">
       <div class="card-body">
-        <h5 class="card-title">Resultados por frame:</h5>
+        <h6 class="card-title">Resultados por frame:</h6>
         <div class="table-responsive">
           <table class="table table-bordered table-hover" id="resultTable">
             <thead class="table-light">
@@ -67,12 +67,12 @@
     // Guardará los registros ya enviados para evitar duplicados
     const registrosSubidos = new Set();
 
-    let ultimoId = 0;  // inicializacion en 0
+    let ultimoId = 1;  // inicializacion en 0
 
     async function enviarPeso(frame, intervalMs, pesoKg) {
       const clave = `${frame}-${pesoKg}`;
       if (registrosSubidos.has(clave)) {
-        console.log(`⏩ Registro duplicado ignorado: Frame ${frame}, ${pesoKg} kg`);
+        console.log(`Registro duplicado ignorado: Frame ${frame}, ${pesoKg} kg`);
         return;
       }
 
@@ -95,12 +95,12 @@
 
         if (res.ok) {
           registrosSubidos.add(clave);
-          console.log(`✅ Enviado a Supabase: Frame ${frame}, ${pesoKg} kg`);
+          console.log(`Enviado a Supabase: Frame ${frame}, ${pesoKg} kg`);
         } else {
-          console.error("❌ Error al enviar:", await res.text());
+          console.error("Error al enviar:", await res.text());
         }
       } catch (err) {
-        console.error("❌ Error de conexión:", err);
+        console.error("Error de conexión:", err);
       }
     }
 
