@@ -1,3 +1,6 @@
+// ===== CONTROL DE GRÁFICA =====
+let graficarHabilitado = false;
+
 // FUNCIÓN PARA CALCULAR PROMEDIO EN MM 
 function calcularLongitudPromedioMM() {
     const input1 = document.getElementById('longitud1');
@@ -239,6 +242,30 @@ document.addEventListener('DOMContentLoaded', async function () {
 });
 
 
+
+document.getElementById('btnGraficar').addEventListener('click', function () {
+    graficarHabilitado = true;  // habilita graficar
+    actualizarGrafica();        // dibuja la gráfica en ese momento
+    moverBotonesDebajoGrafica(); // <-- función para mover botones
+});
+
+function moverBotonesDebajoGrafica() {
+    const botones = document.querySelector('.mb-3.text-end');
+    const contenedorGrafica = document.querySelector('.grafica-contenedor');
+    if (botones && contenedorGrafica) {
+        contenedorGrafica.insertAdjacentElement('afterend', botones);
+    }
+}
+
+// Al cargar la página, los botones deben estar debajo de la tabla
+document.addEventListener('DOMContentLoaded', function () {
+    const botones = document.querySelector('.mb-3.text-end');
+    const tabla = document.querySelector('#tablaDatos');
+    if (botones && tabla) {
+        tabla.insertAdjacentElement('afterend', botones);
+    }
+});
+
 //actualizar esfuerzo al editar la tabla
 document.addEventListener('input', function (e) {
     if (e.target.classList.contains('editable')) {
@@ -395,8 +422,9 @@ document.getElementById('btnGenerarPDF').addEventListener('click', async functio
 
 //función para actualizar la gráfica 
 function actualizarGrafica() {
-    const filas = document.querySelectorAll('#tablaDatos tbody tr');
+    if (!graficarHabilitado) return; // <- solo grafica si el usuario ya dio clic
 
+    const filas = document.querySelectorAll('#tablaDatos tbody tr');
     const deformaciones = [];
     const esfuerzos = [];
 

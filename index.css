@@ -34,20 +34,17 @@ h2 {
 
   .row.g-0.mb-1 {
     display: flex;
-    align-items: flex-start;
-    /* fuerza alineación arriba */
+    align-items: flex-start;  /* fuerza alineación arriba */
   }
 
   .col-3,
   .col-9 {
     display: flex;
     align-items: flex-start;
-    /* alinear los logos arriba */
   }
 
   .logo1 {
     height: 70px;
-    /* más pequeño en móvil para que no empuje demasiado */
     margin-top: -8px;
   }
 }
@@ -60,7 +57,7 @@ h2 {
   vertical-align: middle !important;
 }
 
-/* Opcional si quieres mejor control del aspecto */
+/* control del aspecto */
 .object-fit-contain {
   object-fit: contain;
 }
@@ -68,9 +65,7 @@ h2 {
 .titulo-deformaciones {
   text-align: center;
   color: #003366;
-  /* Azul marino más oscuro */
   font-size: 1.1rem;
-  /* Más pequeño que el h2 original */
   font-weight: bold;
   font-family: 'Segoe UI', sans-serif;
 }
@@ -79,31 +74,29 @@ h2 {
 #tablaDatos th,
 #tablaDatos td {
   font-size: 0.74rem !important;
-  /* texto más pequeño */
   padding: 2px 4px !important;
   /* menos espacio interno */
   line-height: 1.1;
-  /* más compacto */
 }
 
 #tablaDatos input {
-  font-size: 1.5rem !important;
-  /* texto pequeño en campos editables */
+  font-size: 1.5rem !important;  /* texto pequeño en campos editables */
   padding: 2px 4px !important;
-  height: auto !important;
-  /* evita que se estiren */
+  height: auto !important;       /* evita que se estiren */
 }
 
 
 /* Reducir tamaño del texto en todos los botones */
 .btn {
   font-size: 0.75rem !important;
-  /* más pequeño que el tamaño por defecto */
-  padding: 4px 8px !important;
-  /* menos espacio interno para que se vean más compactos */
+  padding: 2px 6px !important;
 }
 
-/* Opcional: hacer que el texto del dropdown sea también más pequeño */
+/* hacer que el texto del dropdown sea también más pequeño */
 .dropdown-menu .dropdown-item {
   font-size: 0.75rem !important;
+}
+
+.modal-footer .btn {
+  font-size: 0.8rem !important;
 }

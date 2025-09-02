@@ -44,9 +44,10 @@ h2 {
   font-size: 0.8rem;
 }
 
-#btnGenerarPDF {
+#btnGenerarPDF, #btnGraficar  {
   font-size: 0.85rem;
-
+  padding: 2px 6px;   /* Menor espacio interno */
+  height: 28px;       /* Altura más baja */ 
 }
 
 /* Reduce el tamaño de letra y padding para toda la tabla de datos generales */
