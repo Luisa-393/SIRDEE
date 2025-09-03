@@ -66,10 +66,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const { data, error } = await supabase
                 .from('Sensor_LDVT')
-                .select('Ldvt1, Ldvt2, time')
-                .gte('time', fechaInicio.toISOString())
-                .lte('time', fechaFin.toISOString())
-                .order('time', { ascending: true });
+                .select('id, Ldvt1, Ldvt2, time')
+                //.gte('time', fechaInicio.toISOString())
+                //.lte('time', fechaFin.toISOString())
+                .order('id', { ascending: true });
 
             if (error) {
                 console.error('Error al obtener datos:', error);
@@ -84,10 +84,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // 3️ Filtrar datos según el intervalo de salto
             for (let t = inicio; t <= fin; t += salto) {
-                let idRegistro = t; // si t=1 → id=1, si t=6 → id=6, etc.
+                let idRegistro = t; // lectura t → id = t
 
-                // Buscar registro con ese id en Supabase
-                const lectura = data[idRegistro - 1]; // -1 porque array empieza en índice 0
+                // Buscar registro con ese id 
+                const lectura = data.find(reg => reg.id === idRegistro); // -1 porque array empieza en índice 0
 
                 if (!lectura) continue; // si no existe, saltar
 
