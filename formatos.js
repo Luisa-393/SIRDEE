@@ -370,7 +370,7 @@ document.getElementById('btnGenerarPDF').addEventListener('click', async functio
 
     const opciones = {
         margin: [10, 20, 10, 20],
-        filename: `${nombreArchivo}-${fechaHora}.pdf`,
+        filename: `${nombreArchivo}`,
         image: { type: 'jpeg', quality: 1 },
         html2canvas: {
             scale: 3,
