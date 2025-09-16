@@ -1,3 +1,46 @@
+// ================== CONFIG SUPABASE ==================
+const supabaseUrl = "https://deccldevwyqsleaxcglh.supabase.co/rest/v1/Weight_carga";
+const supabaseApiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlY2NsZGV2d3lxc2xlYXhjZ2xoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ4OTEwMTksImV4cCI6MjA3MDQ2NzAxOX0.wDy8DT_8QeDY0kjW3hInZ6u7ji9J2xSTl-qrdJsB88g";
+
+const registrosSubidos = new Set();
+let ultimoId = 1; // inicializacion en 1
+
+// === FUNCIÓN: ENVIAR A SUPABASE ===
+async function enviarPeso(frame, intervalMs, pesoKg) {
+  const clave = `${frame}-${pesoKg}`;
+  if (registrosSubidos.has(clave)) {
+    console.log(`Registro duplicado ignorado: Frame ${frame}, ${pesoKg} kg`);
+    return;
+  }
+
+  try {
+    const res = await fetch(supabaseUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": supabaseApiKey,
+        "Authorization": `Bearer ${supabaseApiKey}`,
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify({
+        id: ultimoId++,
+        frame: frame,
+        intervalo_ms: intervalMs,
+        peso_enviado: pesoKg
+      })
+    });
+
+    if (res.ok) {
+      registrosSubidos.add(clave);
+      console.log(`Enviado a Supabase: Frame ${frame}, ${pesoKg} kg`);
+    } else {
+      console.error("Error al enviar:", await res.text());
+    }
+  } catch (err) {
+    console.error("Error de conexión:", err);
+  }
+}
+
 // CARGAR EL MODELO 
 let modelo;
 
@@ -254,6 +297,12 @@ async function processVideo(event) {
     const tr = document.createElement('tr');
     tr.innerHTML = `<td>${r.frame}</td><td>${r.resultado}</td>`;
     tbody.appendChild(tr);
+
+    // --- Enviar a Supabase ---
+    const pesoKg = Number(r.resultado);
+    if (!isNaN(pesoKg)) {
+      enviarPeso(r.frame, intervalo, pesoKg);
+    }
   });
 
   document.getElementById('statusLabel').innerHTML =
