@@ -438,6 +438,12 @@ function actualizarGrafica() {
         }
     });
 
+    // Asegurar que la curva empiece en (0,0)
+    /*if (!(deformaciones[0] === 0 && esfuerzos[0] === 0)) {
+        deformaciones.unshift(0);
+        esfuerzos.unshift(0);
+    }*/
+
     const ctx = document.getElementById('graficaDeformaciones').getContext('2d');
 
     if (window.miGrafica) {
@@ -458,8 +464,7 @@ function actualizarGrafica() {
                     fill: false,
                     pointRadius: // si hay muchos datos, puntos pequeños
                         deformaciones.length > 30 ? 1 :  //mas de 25 puntos  → muy pequeños
-                            deformaciones.length > 20 ? 2 :
-                                5,
+                            deformaciones.length > 20 ? 2 : 5,
 
                     pointBackgroundColor: '#007bff',
                     //grosor de la linea grafica
@@ -489,3 +494,15 @@ function actualizarGrafica() {
         }
     });
 }
+                /*y: {
+                    title: { display: true, text: 'Esfuerzo (σ)' },
+                    min: 0,
+                    max: Math.ceil(Math.max(...esfuerzos) / 10) * 10, // redondea al múltiplo de 10 más cercano
+                    ticks: {
+                        stepSize: 10
+                    }
+                }
+            }
+        }
+    });
+}*/
