@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             // 1️ Obtener el timestamp del primer registro para usar como referencia
             const { data: primerRegistro, error: errPrimer } = await supabase
-                .from('Sensor_LDVT')
+                .from('Sensor_LVDT')
                 .select('time')
                 .order('time', { ascending: true })
                 .limit(1);
@@ -65,8 +65,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const fechaFin = new Date(fechaInicio.getTime() + fin * 1000);
 
             const { data, error } = await supabase
-                .from('Sensor_LDVT')
-                .select('id, Ldvt1, Ldvt2, time')
+                .from('Sensor_LVDT')
+                .select('id, Lvdt1, Lvdt2, time')
                 //.gte('time', fechaInicio.toISOString())
                 //.lte('time', fechaFin.toISOString())
                 .order('id', { ascending: true });
@@ -91,15 +91,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (!lectura) continue; // si no existe, saltar
 
-                const Ldvt1 = parseFloat(lectura.Ldvt1);
-                const Ldvt2 = parseFloat(lectura.Ldvt2);
-                const promedio = ((Ldvt1 + Ldvt2) / 2);
+                const Lvdt1 = parseFloat(lectura.Lvdt1);
+                const Lvdt2 = parseFloat(lectura.Lvdt2);
+                const promedio = ((Lvdt1 + Lvdt2) / 2);
 
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
                 <td>${t}</td>
-                <td contenteditable="true" class="editable lvdt1">${truncar4Decimales(lectura.Ldvt1)}</td>
-                <td contenteditable="true" class="editable lvdt2">${truncar4Decimales(lectura.Ldvt2)}</td>
+                <td contenteditable="true" class="editable lvdt1">${truncar4Decimales(lectura.Lvdt1)}</td>
+                <td contenteditable="true" class="editable lvdt2">${truncar4Decimales(lectura.Lvdt2)}</td>
                 <td class="promedio">${truncar4Decimales(promedio)}</td>
             `;
                 tbody.appendChild(fila);
