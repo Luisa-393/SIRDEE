@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function () {
         window.location.href = "pilas.html";
     });
 
-
+    //Botón Subir vídeo
     document.getElementById("btnDatos").addEventListener("click", function () {
         window.location.href = "frontend/detectorNum.html";
 
