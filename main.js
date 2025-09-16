@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     //Botón Subir vídeo
     document.getElementById("btnDatos").addEventListener("click", function () {
-        window.location.href = "frontend/detectorNum.html";
+        window.location.href = "detector/detectorNum.html";
 
     });
 
