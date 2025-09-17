@@ -400,8 +400,8 @@ document.getElementById('btnGenerarPDF').addEventListener('click', async functio
         // Borrar todos los registros de Weight_carga
         await supabase.from('Weight_carga').delete();
 
-        // Borrar todos los registros de Sensor_LDVT
-        await supabase.from('Sensor_LDVT').delete().neq('id', 0);
+        // Borrar todos los registros de Sensor_LVDT
+        await supabase.from('Sensor_LVDT').delete().neq('id', 0);
 
         console.log("Datos eliminados correctamente de Supabase");
     } catch (error) {
