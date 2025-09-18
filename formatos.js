@@ -398,7 +398,7 @@ document.getElementById('btnGenerarPDF').addEventListener('click', async functio
     // 3. Eliminar datos de Supabase
     try {
         // Borrar todos los registros de Weight_carga
-        await supabase.from('Weight_carga').delete();
+        await supabase.from('Weight_carga').delete().neq('id', 0);
 
         // Borrar todos los registros de Sensor_LVDT
         await supabase.from('Sensor_LVDT').delete().neq('id', 0);
