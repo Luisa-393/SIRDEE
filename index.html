@@ -46,7 +46,7 @@
             <!-- Botón para abrir el modal -->
             <div class="mb-3 d-flex justify-content-end gap-2">
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTiempo">
-                    Elegir lectura de tiempo
+                    Elegir intervalo de tiempo
                 </button>
                 <!-- Botón para graficar -->
                 <button class="btn btn-outline-primary" id="btnGraficar">
@@ -80,24 +80,17 @@
                 <div class="modal-dialog">
                     <form id="formTiempo" class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="modalTiempoLabel">Configurar lectura de tiempo</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Cerrar"></button>
+                            <h5 class="modal-title" id="modalTiempoLabel">Configurar intervalo de tiempo</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                         </div>
                         <div class="modal-body">
-                            <div class="mb-3">
-                                <label for="inicio" class="form-label">Inicio (seg)</label>
-                                <input type="number" class="form-control" id="inicio" min="0" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="fin" class="form-label">Fin (seg)</label>
-                                <input type="number" class="form-control" id="fin" min="0" required>
-                            </div>
+                           
                             <div class="mb-3">
                                 <label for="salto" class="form-label">Intervalo (seg)</label>
                                 <select class="form-select" id="salto" required>
+                                    <option value="1"  selected>1 segundos</option>
                                     <option value="5">5 segundos</option>
-                                    <option value="10" selected>10 segundos</option>
+                                    <option value="10">10 segundos</option>
                                     <option value="15">15 segundos</option>
                                     <option value="20">20 segundos</option>
                                 </select>

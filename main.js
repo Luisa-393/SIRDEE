@@ -21,54 +21,20 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('formTiempo').addEventListener('submit', async function (event) {
         event.preventDefault();
 
-        const inicio = parseInt(document.getElementById('inicio').value);
-        const fin = parseInt(document.getElementById('fin').value);
         const salto = parseInt(document.getElementById('salto').value);
         const tbody = document.querySelector('#tablaDatos tbody');
         tbody.innerHTML = ''; // Limpiar tabla
 
-        if (inicio < 0 || fin < inicio || salto <= 0) {
-            alert('Verifica que los valores de inicio, fin e intervalo sean válidos.');
+        if (salto <= 0) {
+            alert('El intervalo debe ser mayor a 0.');
             return;
         }
 
         try {
-            // 1️ Obtener el timestamp del primer registro para usar como referencia
-            const { data: primerRegistro, error: errPrimer } = await supabase
-                .from('Sensor_LVDT')
-                .select('time')
-                .order('time', { ascending: true })
-                .limit(1);
-
-            if (errPrimer || !primerRegistro || primerRegistro.length === 0) {
-                console.error('No se encontró registro inicial:', errPrimer);
-                alert('No se pudo obtener el tiempo inicial de la base de datos.');
-                return;
-            }
-
-            // Tomamos el primer registro real de la base de datos
-            const fechaPrimerRegistro = new Date(primerRegistro[0].time);
-
-            // Ajustamos fechaInicio dependiendo del valor de inicio
-            let fechaInicio;
-            if (inicio === 1) {
-                // Si el usuario elige inicio = 1, no desplazamos, usamos el primer dato
-                fechaInicio = fechaPrimerRegistro;
-            } else {
-                // Si elige inicio > 1, calculamos normalmente
-                fechaInicio = new Date(fechaPrimerRegistro.getTime() + (inicio - 1) * 1000);
-            }
-
-
-            // 2️ Traer todos los registros entre el inicio y fin relativo en segundos
-            // Calculamos los timestamps absolutos
-            const fechaFin = new Date(fechaInicio.getTime() + fin * 1000);
-
+            // 1️ Obtener TODOS los registros ordenados por ID 
             const { data, error } = await supabase
                 .from('Sensor_LVDT')
-                .select('id, Lvdt1, Lvdt2, time')
-                //.gte('time', fechaInicio.toISOString())
-                //.lte('time', fechaFin.toISOString())
+                .select('id, Lvdt1, Lvdt2')
                 .order('id', { ascending: true });
 
             if (error) {
@@ -78,26 +44,21 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (!data || data.length === 0) {
-                alert('No se encontraron datos en el rango seleccionado.');
+                alert('No se encontraron datos en la base de datos.');
                 return;
             }
 
-            // 3️ Filtrar datos según el intervalo de salto
-            for (let t = inicio; t <= fin; t += salto) {
-                let idRegistro = t; // lectura t → id = t
 
-                // Buscar registro con ese id 
-                const lectura = data.find(reg => reg.id === idRegistro); // -1 porque array empieza en índice 0
-
-                if (!lectura) continue; // si no existe, saltar
-
+            // Filtrar registros según el intervalo seleccionado
+            for (let i = 0; i < data.length; i += salto) {
+                const lectura = data[i];
                 const Lvdt1 = parseFloat(lectura.Lvdt1);
                 const Lvdt2 = parseFloat(lectura.Lvdt2);
                 const promedio = ((Lvdt1 + Lvdt2) / 2);
 
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
-                <td>${t}</td>
+                <td>${lectura.id}</td>
                 <td contenteditable="true" class="editable lvdt1">${truncar4Decimales(lectura.Lvdt1)}</td>
                 <td contenteditable="true" class="editable lvdt2">${truncar4Decimales(lectura.Lvdt2)}</td>
                 <td class="promedio">${truncar4Decimales(promedio)}</td>
@@ -105,9 +66,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 tbody.appendChild(fila);
             }
 
+            // Cerrar modal y actualizar gráfica
+            const modalTiempo = bootstrap.Modal.getInstance(document.getElementById('modalTiempo'));
             modalTiempo.hide();
-
-            // Actualizar gráfica inmediatamente
             actualizarGrafica();
 
         } catch (err) {
